@@ -1,4 +1,4 @@
-# \[spec-001\] A Convention for Structuring Classes Using Partial Classes
+# \[spec-001\] Class Composition with Partial Classes
 
 This language-agnostic document introduces a convention for structuring individual classes using partial classes. It focuses on simplifying class definitions by splitting them into manageable parts, enhancing modularity and maintainability.
 
@@ -600,7 +600,7 @@ classDiagram
     }
 
     class Interface4["🥗 CatInterface"] {
-        <<empty>>
+        <<composed, empty>>
     }
 
     %% Relationships
@@ -663,12 +663,12 @@ classDiagram
 
     namespace Interface {
         class Interface1["🥗 CatInterface"] {
-            <<interface>>
+            <<composed interface>>
         }
     }
 
     class Composed["🥗 Cat"] {
-        <<composed>>
+        <<composed, empty>>
     }
 
     %% Relationships
@@ -695,25 +695,36 @@ The composed class and its interface should remain empty, serving only to combin
 
 ### Additional Considerations
 
-1. **Inheritance Order**
+1. **`ImplementsInterface` Import Order**
 
    When importing `ImplementsInterface`, place it at the bottom of the inheritance chain to allow overriding by other classes:
 
-   ```pseudo
-   class MyClass
-   └── extends ThirdClass
-        └── extends SecondClass
-             └── extends ImplementsInterface
-   ```
+    ```mermaid
+    flowchart
+        subgraph MyClass
+            subgraph ThirdClass
+                subgraph SecondClass
+                    ImplementsInterface
+                end
+            end
+        end
+    ```
 
-2. **Dependency Ordering**
+2. **`WithBase` and `WithBaseInterface` Import Order**
 
    When importing partials and their interfaces, order them from highest-level dependencies to the base. The base class (`WithBase` or `WithBaseInterface`) is the most fundamental dependency:
 
-   ```pseudo
-   class Cat
-   ├── WithAgility
-   ├── WithAge
-   ├── WithBase
-   └── ImplementsInterface
-   ```
+   ```mermaid
+    flowchart
+        subgraph MyClass
+            subgraph WithSomeDependency2
+                subgraph WithSomeDependency1
+                    subgraph WithBase
+                        ImplementsInterface
+                    end
+                end
+            end
+        end
+    ```
+
+    In this example, `SomeDependency1` depends on `Base`, and `SomeDependency2` depends on `SomeDependency1`.
