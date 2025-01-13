@@ -1,730 +1,351 @@
 # \[spec-001\] Class Composition with Partial Classes
 
-This language-agnostic document introduces a convention for structuring individual classes using partial classes. It focuses on simplifying class definitions by splitting them into manageable parts, enhancing modularity and maintainability.
+This document describes a convention for structuring classes by splitting them into multiple parts (partial classes). It focuses on simplifying class definitions through modular organization, enhancing both maintainability and readability.
 
-In a separate specification, we will explore how to extend this approach across groups of classes, which is particularly useful when partials represent features in a project or package.
+While some languages (like C#) have native partial-class features, this specification uses "partial classes" to mean splitting a class into multiple parts at the source code level—not compile time—for better organization and modularity.
 
 ## Background
 
-Partial classes allow you to split a single class definition across multiple source files. Each partial class contains a portion of the overall class, and all parts are combined to form the complete class. This approach helps manage complex classes by dividing them into smaller, more manageable pieces.
+Partial classes let you split a single class definition across multiple files. Each file contains a distinct portion of the class, and these parts combine to form a complete class. This approach helps manage complex classes by breaking them into smaller, more manageable pieces.
 
-Example:
+**In pseudo-code:**
 
-```mermaid
----
-title: "Class = Partial1 + Partial2 + ... + PartialN"
-config:
-    class:
-        hideEmptyMembersBox: true
----
-classDiagram
-    class Partial1_["Partial1"] {
-        +method1()
-        +method2()
-    }
+```python
+# partial 1
+class Partial1 {
+    void method1() {}
+    void method2() {}
+}
 
-    class Partial2_["Partial2"] {
-        +method3()
-        +method4()
-    }
+# partial 2
+class Partial2 {
+    void method3() {}
+    void method4() {}
+}
 
-    class Partial3_["PartialN"] {
-        +...()
-        +methodN()
-    }
+# composed class
+class MyClass extends Partial1, Partial2 {
+}
 
-    class Composed_["ClassA"] {
-    }
+# usage
+obj = new MyClass();
 
-    %% Relationships
-    Partial1_ <|-- Composed_
-    Partial2_ <|-- Composed_
-    Partial3_ <|-- Composed_
-
-    %% Apply Styles
-    style Base_ fill:#6060ff20, stroke-dasharray: 5 5
-    style Composed_ bugfix:#111, stroke-width:2px, font-weight: bold
-    style External1 bugfix:#111, stroke-width:2px, font-weight: bold
-    style Partial1_ bugfix:#111, stroke-dasharray: 5 5
-    style Partial2_ bugfix:#111, stroke-dasharray: 5 5
-    style Partial3_ bugfix:#111, stroke-dasharray: 5 5
-    style Partial4_ bugfix:#111, stroke-dasharray: 5 5
-    style Interface1 fill:#ff606020, stroke-dasharray: 2 2
-    style Interface2 fill:#ff606020, stroke-dasharray: 2 2
-    style Interface3 fill:#ff606020, stroke-dasharray: 2 2
-    style Interface4 fill:#ff606020, stroke-dasharray: 2 2
+obj.method1();  # from Partial1
+obj.method4();  # from Partial2
 ```
 
-Using partial classes is beneficial in several scenarios:
-
-- **Modularity**: Large classes can be broken down into smaller sections for easier understanding and maintenance.
-- **Organization**: Related methods can be grouped together, improving code structure.
-- **Collaboration**: Multiple developers can work on different parts simultaneously, reducing merge conflicts.
-
-## Support in Programming Languages
-
-Some programming languages, like C#, provide built-in support for partial classes using the `partial` keyword. This feature allows you to split a class definition across multiple files, which are then combined at compile time.
-
-In languages without native support for partial classes, such as Python, similar modularity can be achieved through traits, mixins, multiple inheritance, or single inheritance composition.
-
-In this specification, "partial classes" refers to splitting a class into multiple parts for better organization and modularity, with the parts combined at the source code level rather than at compile time.
+> Note: The code examples on this document are language-agnostic pseudo-code, borrowing features from Python, C#, and other languages, solely for illustration.
+>
 
 ## Specification
 
 This convention introduces a method for structuring classes using partial classes, involving three main components:
 
-1. **🥣 Base Class**: Contains the core functionality.
-2. **🍅 Partial Classes**: Add additional functionalities.
-3. **🥗 Composed Class**: Combines the base class and partials into a single class.
+1. **Base Class**: Contains the core functionality.
+2. **Partial Classes**: Add additional functionalities.
+3. **Composed Class**: Combines the base class and partials into a single class.
 
-An example of a composed class:
+**Example in pseudo-code:**
 
-```mermaid
----
-title: "🥗 Composed = 🥣 Base + 🍅 Partial1 + 🍅 Partial2 + ... + 🍅 PartialN"
-config:
-    class:
-        hideEmptyMembersBox: true
----
-classDiagram
-    class Base_["🥣 CatBase"] {
-        <<base>>
-        +set_name(name)
-        +get_name()
-    }
+```python
+# base class
+class UserBase {
+    void set_name(name: str) {}
 
-    class Partial1_["🍅 WithAge"] {
-        <<partial>>
-        +set_age(age)
-        +get_age()
-    }
+    str get_name() {}
+}
 
-    class Partial2_["🍅 WithAgility"] {
-        <<partial>>
-        +set_agility(agility)
-        +get_agility()
-    }
+# partial 1
+class WithDateOfBirth {
+    void set_dob(dob: Date) {}
 
-    class Composed_["🥗 Cat"] {
-        <<composed>>
-    }
+    Date get_dob() {}
+}
 
-    %% Relationships
-    Base_     <|-- Composed_ : extends
-    Partial1_ <|-- Composed_ : extends
-    Partial2_ <|-- Composed_ : extends
+# partial 2
+class WithAge {
+    int get_age() {}
+}
 
-    %% Apply Styles
-    style Base_ fill:#6060ff20, stroke-dasharray: 5 5
-    style Composed_ bugfix:#111, stroke-width:2px, font-weight: bold
-    style External1 bugfix:#111, stroke-width:2px, font-weight: bold
-    style Partial1_ fill:#60ff6020, stroke-dasharray: 5 5
-    style Partial2_ fill:#60ff6020, stroke-dasharray: 5 5
-    style Partial3_ fill:#60ff6020, stroke-dasharray: 5 5
-    style Partial4_ fill:#60ff6020, stroke-dasharray: 5 5
-    style Interface1 fill:#ff606020, stroke-dasharray: 2 2
-    style Interface2 fill:#ff606020, stroke-dasharray: 2 2
-    style Interface3 fill:#ff606020, stroke-dasharray: 2 2
-    style Interface4 fill:#ff606020, stroke-dasharray: 2 2
+# composed class
+class User extends WithAge, WithDateOfBirth, UserBase {
+}
 ```
 
-In this convention:
+**Usage:**
 
-- The base class (`CatBase`) includes essential methods.
-- Partial classes are named using the pattern `With<PartialName>` (e.g., `WithAge`, `WithAgility`).
-- The composed class (`Cat`) extends the base class and incorporates all partials.
+```python
+# instantiate
+user = new User();
+
+# e.g., outputs 20 in Dec 2025
+user.set_dob("2005-04-21");
+print(user.get_age());
+```
 
 ### File Structure
 
 The recommended file structure:
 
-```pseudo
-<class_name>/
-├── 🥣 <class_name>_base.lang       # Base class with core functionality
+```plaintext
+📁 <class_name>/
+├── <class_name>_base.lang       # Base class
 │
-├── 📁 partials/                    # Contains all partial implementations
-│   ├── 🍅 with_<partial1>.lang     # Partial 1
-│   ├── ...                         # Additional partial classes
-│   └── 🍅 with_<partialN>.lang     # Partial N
+├── 📁 partials/                 # Contains partial implementations
+│   ├── with_<partial1>.lang     # Partial 1
+│   ├── ...                      # Additional partial classes
+│   └── with_<partialN>.lang     # Partial N
 │
-└── 🥗 <class_name>.lang            # Composed class: base + partials
+└── <class_name>.lang            # Composed class (base + partials)
 ```
 
 Notes:
 
-- `<class_name>` is your class name (e.g., `Cat`).
+- `<class_name>` is the class name (e.g., `User`).
 - `.lang` represents the language-specific extension (e.g., `.py`, `.cs`).
-- Adjust naming conventions to match your programming language's standards.
+- Adjust case conventions to match your language's standards.
+
+### Name Convention
+
+Follow these naming conventions for classes and files:
+
+- **Base classes** are named with a `Base` suffix (e.g., `UserBase`)
+- **Partial classes** start with `With` prefix (e.g., `WithAge`, `WithDateOfBirth`)
+- **Composed classes** use the plain name without prefix/suffix (e.g., `User`)
 
 ### One-to-One Interface Mapping
 
-To enhance type safety and ensure consistent method implementation, each class must have a corresponding interface. This applies to:
+For stronger type safety and consistent method signatures, each class should have a corresponding interface:
 
-- **Base Class**
-- **Partial Classes**
-- **Composed Class**
-
-```pseudo
-<class_name>/
+```plaintext
+📁 <class_name>/
 ├── ...
-├── 🥣 <class_name>_base_interface.lang     # Interface for the base class
+├── <class_name>_base_interface.lang     # Interface for the base class
 │
 ├── 📁 partials/
-│   ├── 🍅 with_<partial1>_interface.lang   # Partial 1 interface
+│   ├── with_<partial1>_interface.lang   # Interface for Partial 1
 │   ├── ...
-│   └── 🍅 with_<partialN>_interface.lang   # Partial N interface
+│   └── with_<partialN>_interface.lang   # Interface for Partial N
 │
-└── 🥗 <class_name>_interface.lang          # Composed interface: base + partial interfaces
+└── <class_name>_interface.lang          # Composed interface
 ```
 
-Interfaces are named by appending `Interface` to the class name, for example:
+Interfaces are named by appending `Interface` to the class name (e.g., `UserBaseInterface`, `WithAgeInterface`, `UserInterface`).
 
-- `CatBase` → `CatBaseInterface`
-- `WithAge` → `WithAgeInterface`
-- `Cat` → `CatInterface`
+## Base Class
 
-### Implementation Details
+The **base class** holds essential methods or can be empty if you prefer moving all methods to partials.
 
-#### Base Class
+### Base Class Example
 
-The **base class** serves as a special partial containing the core functionality.
+Let's define the interface for the base class:
 
-##### Base Class Interface
+```python
+# file: user_base_interface.lang
+interface UserBaseInterface
+{
+    void set_name(name: str);
 
-Interfaces should only list method signatures without any concrete implementations. This applies to all interfaces, including the base class interface.
-
-Base interfaces are named using `<ClassName>BaseInterface`. For example:
-
-```mermaid
----
-config:
-    class:
-        hideEmptyMembersBox: true
----
-classDiagram
-    class Interface1["🥣 CatBaseInterface"] {
-        <<interface>>
-        +set_name(name)
-        +get_name()
-    }
-
-    %% Apply Styles
-    style Base_ fill:#6060ff20, stroke-dasharray: 5 5
-    style Composed_ bugfix:#111, stroke-width:2px, font-weight: bold
-    style External1 bugfix:#111, stroke-width:2px, font-weight: bold
-    style Partial1_ fill:#60ff6020, stroke-dasharray: 5 5
-    style Partial2_ fill:#60ff6020, stroke-dasharray: 5 5
-    style Partial3_ fill:#60ff6020, stroke-dasharray: 5 5
-    style Partial4_ fill:#60ff6020, stroke-dasharray: 5 5
-    style Interface1 fill:#ff606020, stroke-dasharray: 2 2
-    style Interface2 fill:#ff606020, stroke-dasharray: 2 2
-    style Interface3 fill:#ff606020, stroke-dasharray: 2 2
-    style Interface4 fill:#ff606020, stroke-dasharray: 2 2
+    str get_name();
+}
 ```
 
-##### Concrete Base Class
+The concrete class must import its interface and rename it to `ImplementsInterface`:
 
-Concrete classes inherit from their interface, renamed as `ImplementsInterface`. This applies to all concrete classes, including the base class.
+```python
+# file: user_base.lang
+"./user_base_interface" as ImplementsInterface;
 
-```mermaid
----
-config:
-    class:
-        hideEmptyMembersBox: true
----
-classDiagram
-    namespace Interface {
-        class Interface1["🥣 CatBaseInterface"] {
-            <<interface>>
-            +set_name(name)
-            +get_name()
-        }
+class UserBase implements ImplementsInterface
+{
+    str _name;
+
+    void set_name(name: str) {
+        self._name = name;
     }
 
-    class Base_["🥣 CatBase"] {
-        <<base>>
-        +set_name(name)
-        +get_name()
+    str get_name() {
+        return self._name;
     }
-
-    %% Relationships
-    Interface1 <|-- Base_ : implements "ImplementsInterface"
-
-    %% Apply Styles
-    style Base_ fill:#6060ff20, stroke-dasharray: 5 5
-    style Composed_ bugfix:#111, stroke-width:2px, font-weight: bold
-    style External1 bugfix:#111, stroke-width:2px, font-weight: bold
-    style Partial1_ fill:#60ff6020, stroke-dasharray: 5 5
-    style Partial2_ fill:#60ff6020, stroke-dasharray: 5 5
-    style Partial3_ fill:#60ff6020, stroke-dasharray: 5 5
-    style Partial4_ fill:#60ff6020, stroke-dasharray: 5 5
-    style Interface1 fill:#ff606020, stroke-dasharray: 2 2
-    style Interface2 fill:#ff606020, stroke-dasharray: 2 2
-    style Interface3 fill:#ff606020, stroke-dasharray: 2 2
-    style Interface4 fill:#ff606020, stroke-dasharray: 2 2
+}
 ```
 
-##### Alternative: Base Class as Marker
+### Empty Base Class Example
 
-Alternatively, the base class can be left empty, acting as a marker, with core functionalities moved to a partial class:
+```python
+# file: user_base.lang
+"./user_base_interface" as ImplementsInterface;
 
-```mermaid
----
-config:
-    class:
-        hideEmptyMembersBox: true
----
-classDiagram
-    namespace Interface {
-        class Interface1["🥣 CatBaseInterface"] {
-            <<empty>>
-            %% Empty interface
-        }
-    }
-
-    class Base_["🥣 CatBase"] {
-        <<empty>>
-        %% Empty class
-    }
-
-    %% Notes
-    note "The base class (both concrete and interface) does not contain any methods."
-
-    %% Relationships
-    Interface1 <|-- Base_ : implements "ImplementsInterface"
-
-    %% Apply Styles
-    style Base_ fill:#6060ff20, stroke-dasharray: 5 5
-    style Composed_ bugfix:#111, stroke-width:2px, font-weight: bold
-    style External1 bugfix:#111, stroke-width:2px, font-weight: bold
-    style Partial1_ fill:#60ff6020, stroke-dasharray: 5 5
-    style Partial2_ fill:#60ff6020, stroke-dasharray: 5 5
-    style Partial3_ fill:#60ff6020, stroke-dasharray: 5 5
-    style Partial4_ fill:#60ff6020, stroke-dasharray: 5 5
-    style Interface1 fill:#ff606020, stroke-dasharray: 2 2
-    style Interface2 fill:#ff606020, stroke-dasharray: 2 2
-    style Interface3 fill:#ff606020, stroke-dasharray: 2 2
-    style Interface4 fill:#ff606020, stroke-dasharray: 2 2
+class UserBase implements ImplementsInterface
+{
+    # intentionally empty
+}
 ```
 
-#### Partials
+## Partials
 
-**Partials** add additional functionalities to the composed class.
+### Partial Example
 
-##### Partial Interfaces
+A partial **interface** must **extend** the interfaces of its dependencies. All partials depend on the base class.
 
-Partial interfaces must import the base interface, renaming it to `WithBaseInterface` for consistency. They are named `With<PartialName>Interface`:
+```python
+# file: partials/with_date_of_birth_interface.lang
 
-```mermaid
----
-config:
-    class:
-        hideEmptyMembersBox: true
----
-classDiagram
-    namespace Base {
-        class Interface1["🥣 CatBaseInterface"] {
-            <<interface>>
-            +set_name(name)
-            +get_name()
-        }
-    }
+# base dependency
+"../user_base_interface" as UserBaseInterface;
 
-    class Interface2["🍅 WithAgeInterface"] {
-        <<interface>>
-        +set_age(age)
-        +get_age()
-    }
+interface WithDateOfBirthInterface extends UserBaseInterface
+{
+    void set_dob(dob: Date);
 
-    %% Relationships
-    Interface1 <|-- Interface2 : extends "WithBaseInterface"
-
-    %% Apply Styles
-    style Base_ fill:#6060ff20, stroke-dasharray: 5 5
-    style Composed_ bugfix:#111, stroke-width:2px, font-weight: bold
-    style External1 bugfix:#111, stroke-width:2px, font-weight: bold
-    style Partial1_ fill:#60ff6020, stroke-dasharray: 5 5
-    style Partial2_ fill:#60ff6020, stroke-dasharray: 5 5
-    style Partial3_ fill:#60ff6020, stroke-dasharray: 5 5
-    style Partial4_ fill:#60ff6020, stroke-dasharray: 5 5
-    style Interface1 fill:#ff606020, stroke-dasharray: 2 2
-    style Interface2 fill:#ff606020, stroke-dasharray: 2 2
-    style Interface3 fill:#ff606020, stroke-dasharray: 2 2
-    style Interface4 fill:#ff606020, stroke-dasharray: 2 2
+    Date get_dob();
+}
 ```
 
-##### Dependency on Other Partials
+A **concrete** partial class must **implement** its own interface.
 
-If a partial depends on other partials, its interface must also import those partials' interfaces. For example, `WithAgilityInterface` depends on `WithAgeInterface`:
+```python
+# file: partials/with_date_of_birth.lang
 
-```mermaid
----
-config:
-    class:
-        hideEmptyMembersBox: true
----
-classDiagram
-    namespace Base {
-        class Interface1["🥣 CatBaseInterface"] {
-            <<interface>>
-            +set_name(name)
-            +get_name()
-        }
+# self interface
+"./with_date_of_birth_interface" as ImplementsInterface;
+
+class WithDateOfBirth implements ImplementsInterface
+{
+    Date _dob;
+
+    void set_dob(dob: Date) {
+        self._dob = dob;
     }
 
-    namespace Partial1 {
-        class Interface2["🍅 WithAgeInterface"] {
-            <<interface>>
-            +set_age(age)
-            +get_age()
-        }
+    Date get_dob() {
+        return self._dob;
     }
-
-    namespace PartialN {
-        class Interface3["🍅 With...Interface"] {
-            <<interface>>
-            +...()
-        }
-    }
-
-    class Interface4["🍅 WithAgilityInterface"] {
-        <<interface>>
-        +set_agility(agility)
-        +get_agility()
-    }
-
-    %% Relationships
-    Interface1 <|-- Interface4 : extends "WithBaseInterface"
-    Interface2 <|-- Interface4 : extends
-    Interface3 <|-- Interface4 : extends
-
-    %% Apply Styles
-    style Base_ fill:#6060ff20, stroke-dasharray: 5 5
-    style Composed_ bugfix:#111, stroke-width:2px, font-weight: bold
-    style External1 bugfix:#111, stroke-width:2px, font-weight: bold
-    style Partial1_ fill:#60ff6020, stroke-dasharray: 5 5
-    style Partial2_ fill:#60ff6020, stroke-dasharray: 5 5
-    style Partial3_ fill:#60ff6020, stroke-dasharray: 5 5
-    style Partial4_ fill:#60ff6020, stroke-dasharray: 5 5
-    style Interface1 fill:#ff606020, stroke-dasharray: 2 2
-    style Interface2 fill:#ff606020, stroke-dasharray: 2 2
-    style Interface3 fill:#ff606020, stroke-dasharray: 2 2
-    style Interface4 fill:#ff606020, stroke-dasharray: 2 2
+}
 ```
 
-##### Concrete Partial Classes
+### Partial with Dependencies
 
-Concrete partial classes inherit only from their own `ImplementsInterface`:
+If a partial depends on other partials, its interface should **extend** those partials' interfaces:
 
-```mermaid
----
-config:
-    class:
-        hideEmptyMembersBox: true
----
-classDiagram
-    namespace Interface {
-        class Interface1["🍅 WithAgeInterface"] {
-            <<interface>>
-            +set_age(age)
-            +get_age()
-        }
-    }
+```python
+# file: partials/with_age_interface.lang
 
-    class Partial1_["🍅 WithAge"] {
-        <<partial>>
-        +set_age(age)
-        +get_age()
-    }
+# base dependency
+"../user_base_interface" as UserBaseInterface;
 
-    %% Relationships
-    Interface1 <|-- Partial1_ : implements "ImplementsInterface"
+# this partial depends on "with_date_of_birth"
+"../with_date_of_birth_interface" as WithDateOfBirthInterface;
 
-    %% Apply Styles
-    style Base_ fill:#6060ff20, stroke-dasharray: 5 5
-    style Composed_ bugfix:#111, stroke-width:2px, font-weight: bold
-    style External1 bugfix:#111, stroke-width:2px, font-weight: bold
-    style Partial1_ fill:#60ff6020, stroke-dasharray: 5 5
-    style Partial2_ fill:#60ff6020, stroke-dasharray: 5 5
-    style Partial3_ fill:#60ff6020, stroke-dasharray: 5 5
-    style Partial4_ fill:#60ff6020, stroke-dasharray: 5 5
-    style Interface1 fill:#ff606020, stroke-dasharray: 2 2
-    style Interface2 fill:#ff606020, stroke-dasharray: 2 2
-    style Interface3 fill:#ff606020, stroke-dasharray: 2 2
-    style Interface4 fill:#ff606020, stroke-dasharray: 2 2
+interface WithAgeInterface
+    extends WithDateOfBirthInterface,
+            UserBaseInterface
+{
+    int get_age();
+}
 ```
 
-##### Concrete Partial with Dependencies on Other Partials
+Its concrete implementation:
 
-For partials depending on other partials, inherit only from `ImplementsInterface`:
+```python
+# file: partials/with_age.lang
+"./with_age_interface" as ImplementsInterface;
 
-```mermaid
----
-config:
-    class:
-        hideEmptyMembersBox: true
----
-classDiagram
-    namespace Interface {
-        class Interface1["🥣 CatBaseInterface"] {
-            <<interface>>
-        }
+class WithAge implements ImplementsInterface
+{
+    int get_age() {
+        today = Date::today();
 
-        class Interface2["🍅 WithAgeInterface"] {
-            <<interface>>
-        }
-
-        class Interface3["🍅 With...Interface"] {
-            <<interface>>
-        }
-
-        class Interface4["🍅 WithAgilityInterface"] {
-            <<interface>>
-            +set_agility(agility)
-            +get_agility()
-        }
+        return self.get_dob().diff_from(today).years();
     }
-
-    class Partial1_["🍅 WithAgility"] {
-        <<partial>>
-        +set_agility(agility)
-        +get_agility()
-    }
-
-    %% Relationships
-    Interface1 <|-- Interface4 : extends "WithBaseInterface"
-    Interface2 <|-- Interface4 : extends
-    Interface3 <|-- Interface4 : extends
-    Interface4 <|-- Partial1_ : implements "ImplementsInterface"
-
-    %% Apply Styles
-    style Base_ fill:#6060ff20, stroke-dasharray: 5 5
-    style Composed_ bugfix:#111, stroke-width:2px, font-weight: bold
-    style External1 bugfix:#111, stroke-width:2px, font-weight: bold
-    style Partial1_ fill:#60ff6020, stroke-dasharray: 5 5
-    style Partial2_ fill:#60ff6020, stroke-dasharray: 5 5
-    style Partial3_ fill:#60ff6020, stroke-dasharray: 5 5
-    style Partial4_ fill:#60ff6020, stroke-dasharray: 5 5
-    style Interface1 fill:#ff606020, stroke-dasharray: 2 2
-    style Interface2 fill:#ff606020, stroke-dasharray: 2 2
-    style Interface3 fill:#ff606020, stroke-dasharray: 2 2
-    style Interface4 fill:#ff606020, stroke-dasharray: 2 2
+}
 ```
 
-##### Concrete Partial with External Dependencies
+## Composed Class
 
-Concrete partial classes can also inherit from external concrete classes like traits:
+The **composed class** extends the base plus all partials. It remains empty, serving as the "glue" that ties everything together.
 
-```mermaid
----
-config:
-    class:
-        hideEmptyMembersBox: true
----
-classDiagram
-    namespace SomeExternalLibrary {
-        class External1["🌐 SomeTrait"] {
-            +some_method()
-        }
-    }
+### Composed Class Example
 
-    namespace Interface {
-        class Interface1["🍅 WithPartial3Interface"] {
-            <<interface>>
-            +set_agility(agility)
-            +get_agility()
-        }
-    }
+First, let's define the composed interface that combines all other interfaces:
 
-    class Partial1_["🍅 WithPartial3"] {
-        <<partial>>
-        +set_agility(agility)
-        +get_agility()
-    }
+```python
+# file: user_interface.lang
 
-    %% Relationships
-    Interface1 <|-- Partial1_ : implements "ImplementsInterface"
-    External1 <|-- Partial1_ : extends
+# base dependency
+"./user_base_interface" as UserBaseInterface;
 
-    %% Apply Styles
-    style Base_ fill:#6060ff20, stroke-dasharray: 5 5
-    style Composed_ bugfix:#111, stroke-width:2px, font-weight: bold
-    style External1 bugfix:#111, stroke-width:2px, font-weight: bold
-    style Partial1_ fill:#60ff6020, stroke-dasharray: 5 5
-    style Partial2_ fill:#60ff6020, stroke-dasharray: 5 5
-    style Partial3_ fill:#60ff6020, stroke-dasharray: 5 5
-    style Partial4_ fill:#60ff6020, stroke-dasharray: 5 5
-    style Interface1 fill:#ff606020, stroke-dasharray: 2 2
-    style Interface2 fill:#ff606020, stroke-dasharray: 2 2
-    style Interface3 fill:#ff606020, stroke-dasharray: 2 2
-    style Interface4 fill:#ff606020, stroke-dasharray: 2 2
+# partial dependencies
+"./partials/with_date_of_birth_interface" as WithDateOfBirthInterface;
+"./partials/with_age_interface" as WithAgeInterface;
+
+interface UserInterface
+    extends WithAgeInterface,
+            WithDateOfBirthInterface,
+            UserBaseInterface
+{
+    # intentionally empty
+}
 ```
 
-#### Composed Class
+Then, implement the composed class that combines all concrete implementations:
 
-The **composed class** combines the base class and all partials.
+```python
+# file: user.lang
 
-##### Composed Class Interface
+# self interface
+"./user_interface" as ImplementsInterface;
 
-The composed class interface, named `<ClassName>Interface`, imports all partial interfaces and the base interface:
+# concrete implementations
+"./user_base" as UserBase;
+"./partials/with_date_of_birth" as WithDateOfBirth;
+"./partials/with_age" as WithAge;
 
-```mermaid
----
-config:
-    class:
-        hideEmptyMembersBox: true
----
-classDiagram
-    namespace Base {
-        class Interface1["🥣 CatBaseInterface"] {
-            <<interface>>
-            +set_name(name)
-            +get_name()
-        }
-    }
-
-    namespace Partial1 {
-        class Interface2["🍅 WithAgeInterface"] {
-            <<interface>>
-            +set_age(age)
-            +get_age()
-        }
-    }
-
-    namespace Partial2 {
-        class Interface3["🍅 WithAgilityInterface"] {
-            <<interface>>
-            +set_agility(agility)
-            +get_agility()
-        }
-    }
-
-    class Interface4["🥗 CatInterface"] {
-        <<composed, empty>>
-    }
-
-    %% Relationships
-    Interface1 <|-- Interface4 : extends "WithBaseInterface"
-    Interface2 <|-- Interface4 : extends
-    Interface3 <|-- Interface4 : extends
-
-    %% Apply Styles
-    style Base_ fill:#6060ff20, stroke-dasharray: 5 5
-    style Composed_ bugfix:#111, stroke-width:2px, font-weight: bold
-    style External1 bugfix:#111, stroke-width:2px, font-weight: bold
-    style Partial1_ fill:#60ff6020, stroke-dasharray: 5 5
-    style Partial2_ fill:#60ff6020, stroke-dasharray: 5 5
-    style Partial3_ fill:#60ff6020, stroke-dasharray: 5 5
-    style Partial4_ fill:#60ff6020, stroke-dasharray: 5 5
-    style Interface1 fill:#ff606020, stroke-dasharray: 2 2
-    style Interface2 fill:#ff606020, stroke-dasharray: 2 2
-    style Interface3 fill:#ff606020, stroke-dasharray: 2 2
-    style Interface4 fill:#ff606020, stroke-dasharray: 2 2
+class User
+    extends WithAge,
+            WithDateOfBirth,
+            UserBase
+    implements ImplementsInterface
+{
+    # intentionally empty
+}
 ```
 
-##### Concrete Composed Class
+## Usage Example
 
-The concrete composed class:
+Now that all the components are in place, let's use it:
 
-- Imports and inherits from the concrete classes of all partials.
-- Imports the concrete base class (`WithBase`).
-- Inherits its own interface as `ImplementsInterface`.
+```python
+# reference the composed class
+"./user" as User
 
-```mermaid
----
-config:
-    class:
-        hideEmptyMembersBox: true
----
-classDiagram
-    namespace Base {
-        class Base_["🥣 CatBase"] {
-            <<base>>
-            +set_name(name)
-            +get_name()
-        }
-    }
+user = new User();
 
-    namespace Partial1 {
-        class Partial1_["🍅 WithAge"] {
-            <<partial>>
-            +set_age(age)
-            +get_age()
-        }
-    }
+# set basic information
+user.set_name("John Smith");
+user.set_dob("1990-05-15");
 
-    namespace Partial2 {
-        class Partial2_["🍅 WithAgility"] {
-            <<partial>>
-            +set_agility(agility)
-            +get_agility()
-        }
-    }
+# use methods from different partials
+print(user.get_name());  # "John Smith"
+print(user.get_dob());   # "1990-05-15"
+print(user.get_age());   # "34" (as of 2025)
 
-    namespace Interface {
-        class Interface1["🥗 CatInterface"] {
-            <<composed interface>>
-        }
-    }
-
-    class Composed["🥗 Cat"] {
-        <<composed, empty>>
-    }
-
-    %% Relationships
-    Base_ <|-- Composed : extends "WithBaseInterface"
-    Partial1_ <|-- Composed : extends
-    Partial2_ <|-- Composed : extends
-    Interface1 <|-- Composed : implements "ImplementsInterface"
-
-    %% Apply Styles
-    style Base_ fill:#6060ff20, stroke-dasharray: 5 5
-    style Composed_ bugfix:#111, stroke-width:2px, font-weight: bold
-    style External1 bugfix:#111, stroke-width:2px, font-weight: bold
-    style Partial1_ fill:#60ff6020, stroke-dasharray: 5 5
-    style Partial2_ fill:#60ff6020, stroke-dasharray: 5 5
-    style Partial3_ fill:#60ff6020, stroke-dasharray: 5 5
-    style Partial4_ fill:#60ff6020, stroke-dasharray: 5 5
-    style Interface1 fill:#ff606020, stroke-dasharray: 2 2
-    style Interface2 fill:#ff606020, stroke-dasharray: 2 2
-    style Interface3 fill:#ff606020, stroke-dasharray: 2 2
-    style Interface4 fill:#ff606020, stroke-dasharray: 2 2
+# verify type assignments
+assert user instanceof UserInterface            # true
+assert user instanceof WithDateOfBirthInterface # true
+assert user instanceof WithAgeInterface         # true
+assert user instanceof UserBaseInterface        # true
 ```
 
-The composed class and its interface should remain empty, serving only to combine components. For additional methods or attributes, create a new partial.
+## Additional Considerations
 
-### Additional Considerations
-
-1. **`ImplementsInterface` Import Order**
-
-   When importing `ImplementsInterface`, place it at the bottom of the inheritance chain to allow overriding by other classes:
-
-    ```mermaid
-    flowchart
-        subgraph MyClass
-            subgraph ThirdClass
-                subgraph SecondClass
-                    ImplementsInterface
-                end
-            end
-        end
-    ```
-
-2. **`WithBase` and `WithBaseInterface` Import Order**
-
-   When importing partials and their interfaces, order them from highest-level dependencies to the base. The base class (`WithBase` or `WithBaseInterface`) is the most fundamental dependency:
-
-   ```mermaid
-    flowchart
-        subgraph MyClass
-            subgraph WithSomeDependency2
-                subgraph WithSomeDependency1
-                    subgraph WithBase
-                        ImplementsInterface
-                    end
-                end
-            end
-        end
-    ```
-
-    In this example, `SomeDependency1` depends on `Base`, and `SomeDependency2` depends on `SomeDependency1`.
+1. **Import Order**
+    - When combining multiple interfaces, reference them from higher-level (base) to lower-level (partials).
+    - The same applies for concrete classes that implement multiple partials.
+2. **External Sources**
+    - You can also create partials that extend external or library classes.
+    - Simply import the external class and extend it alongside the partial interface.
+3. **Keep Composed Classes and Their Interfaces Empty**
+    - They should only serve as an aggregator of functionality.
+    - Place any additional logic in a separate partial.
+    - Failing this rule defeats the purpose of splitting the class into partials and centralizes complexity in a single file.
