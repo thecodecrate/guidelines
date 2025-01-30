@@ -39,7 +39,7 @@ class User {
     Date get_dob() {}
     
     # age calculation
-    int calculate_age() {}  # uses `get_dob()`
+    int calculate_age() {}
 }
 ```
 
@@ -82,194 +82,72 @@ class User
 
 Each piece includes an interface that enforces type safety. The final composition yields a single class with all features.
 
-## Expanding to Static Plugin Design (SPD)
+## Static Plugins
 
-While **PCP** focuses on extending individual classes, **Static Plugin Design** expands this concept horizontally across multiple classes.
+A Static Plugin is a self-contained module that implements a specific feature across multiple classes. Unlike runtime plugins, static plugins are composed at source code level and are tightly integrated with the application at compile time.
 
-### Overview
+### Structure
 
-An SPD application is a grouping of multiple PCP classes:
+A Static Plugin follows this structure:
+
+```
+📁 <plugin>/
+├── 📁 base/         # Base classes for new types
+├── 📁 mixins/       # Extensions for existing types
+└── 📁 external/     # Composed external dependencies
+```
+
+### Base Classes
+
+Unlike PCP's empty marker base classes, SPD base classes include basic functionality. This eliminates the need for separate plugins—one for the empty base and another for basic features.
+
+**Example**
+
+Let's add basic functionality directly into base classes. Typically, a class's most fundamental feature becomes part of its base:
 
 ```python
-MyApp = (
-    User = UserBase + WithName,
-    Book = BookBase + WithTitle + WithOwner
-)
+# file: ./with_users/base/user_interface.lang
+
+# Base class with basic functionality ("with_name")
+class UserInterface
+{
+    void set_name(name: str);
+  
+    str get_name();
+}
 ```
 
-Or, more generally:
+The "User" concrete class:
 
 ```python
-Application = (
-    Composed1 = Base1 + Partials1,
-    ...
-    ComposedN = BaseN + PartialsN
-)
+# file: ./with_users/base/user.lang
+
+# self interface
+"./user_interface" as ImplementsInterface;
+
+# Base class with basic functionality ("with_name")
+class User
+    implements ImplementsInterface
+{
+    void set_name(name: str) {}
+  
+    str get_name() {}
+}
 ```
 
-### Simple Example
+> Note: For brevity, we are not showing, but we do the same to "*Book*" by incorporating "*WithTitle*" to its base class.
+>
 
-For example, a minimal SPD application called `MyBooks`, providing two classes `User` and `Book`:
+This approach of including basic functionality in base classes creates a cleaner plugin structure:
 
 ```python
-MyBooks = (
-    User = UserBase + WithName,
-    Book = BookBase + WithTitle + WithOwner
-)
+📁 plugins/
+├── 📁 with_users/  # User base has "name" functionality
+├── 📁 with_books/  # Book base has "title" functionality
+└── 📁 with_owner/
 ```
 
-With the following methods and usage:
-
-```python
-# user "John"
-user = new User();
-user.set_name("John");      # "with_name"
-
-# book "Dracula"
-book = new Book();
-book.set_title("Dracula");  # "with_title"
-
-# Set book to user
-book.set_owner(user);       # "with_owner"
-
-# outputs "John"
-print(book.get_owner());    # "with_owner"
-```
-
-Initially, you might store all PCP files in the application folder:
-
-```bash
-📁 mybooks_app/
-│   # user classes
-├── user.lang          # Composed class
-├── user_base.lang     # Base class
-│
-│   # book classes
-├── book.lang          # Composed class
-├── book_base.lang     # Base class
-│
-│   # partial: user has a name
-├── with_name.lang
-│
-│   # partial: book has a title
-├── with_title.lang
-│
-│   # partial: book has an owner
-└── with_owner.lang
-```
-
-While this can work, SPD prescribes a more structured layout built around three key folders:
-
-1. **`final/`** – Houses *final (composed)* classes.
-2. **`plugins/`** – Contains all *static plugins*.
-3. **`support/`** – Stores shared utilities or configuration (optional).
-
-An SPD application has this file structure:
-
-```
-📁 <application>/
-├── 📁 final/
-├── 📁 plugins/
-└── 📁 support/
-```
-
-Below is an overview of how each folder fits into the bigger picture, followed by more details.
-
-### The `final/` Folder
-
-In SPD, composed classes are known as **Final Classes**. They reside in `final/`, one file per final class:
-
-```
-📁 mybooks_app/
-├── 📁 final/
-│   ├── user.lang
-│   └── book.lang
-└── ...
-```
-
-**Or more generally:**
-
-```
-📁 <application>/
-├── 📁 final/  # final (composed) classes
-└── ...
-```
-
-Final classes are just standard composed classes. We will see them in more details later.
-
-### The `support/` Folder
-
-If the application has shared utilities or configuration, SPD places them in a separate `support/` folder:
-
-```
-📁 mybooks_app/
-├── 📁 support/
-│   ├── 📁 lib_netclient/
-│   ├── 📁 lib_md5/
-│   └── helpers_datetime.lang
-└── ...
-```
-
-**Or more generally:**
-
-```
-📁 <application>/
-├── 📁 support/  # shared utilities and configuration
-└── ...
-```
-
-### The `plugins/` Folder
-
-SPD groups files semantically by feature. Each feature is a "**static plugin**" with its own folder. The folder name reflects the feature's goal, following the same pattern as partials - plugins are partials applied horizontally across multiple classes.
-
-Here's how we might first organize our files into individual static-plugins:
-
-```python
-# Plugin 1: Adds users to the application
-📁 with_users/
-└── user_base.lang
-
-# Plugin 2: Adds books to the application
-📁 with_books/
-└── book_base.lang
-
-# Plugin 3: Users have a name
-📁 with_name/
-└── with_name.lang
-
-# Plugin 4: Books have a title
-📁 with_title/
-└── with_title.lang
-
-# Plugin 5: Books have an owner
-📁 with_owner/
-└── with_owner.lang
-```
-
-All static plugins go into the `plugins/` directory:
-
-```
-📁 mybooks_app/
-├── 📁 final/
-│   ├── user.lang
-│   └── book.lang
-└── 📁 plugins/
-    ├── 📁 with_users/
-    ├── 📁 with_books/
-    ├── 📁 with_name/
-    ├── 📁 with_title/
-    └── 📁 with_owner/
-```
-
-Or more generally:
-
-```
-📁 <application>/
-├── 📁 final/   # final classes
-└── 📁 plugins/ # static plugins
-```
-
-### Partials in SPD, aka “Mixins”
+### Mixins
 
 Organizing files by feature (rather than by class) makes it easier to work on functionality that affects multiple classes. For instance, our current "*with_owner*" plugin extends the "*Book*" class with new methods. However, we may want it to also extend the "User" class with book ownership methods. This would require two partials for the feature: one for Book and another for User.
 
@@ -344,96 +222,6 @@ class BookMixin
 
     str get_title() {}
 }
-```
-
-### Static Plugin File Structure
-
-SPD uses a consistent file structure and naming convention for plugins:
-
-- **Base classes:** live in the `base/` folder without the "_base" suffix (e.g., `user`, `user_interface`)
-- **Mixins:** live in the `mixins/` folder with the "_mixin" suffix (e.g., `user_mixin`, `user_interface_mixin`)
-
-**File Structure**
-
-```python
-📁 <plugin>/
-├── 📁 base/
-│   ├── <class1>.lang
-│   ├── <class1>_interface.lang
-│   ├── ...
-│   ├── <classN>.lang
-│   └── <classN>_interface.lang
-│
-└── 📁 mixins/
-    ├── <class1>_mixin.lang
-    ├── <class1>_interface_mixin.lang
-    ├── ...
-    ├── <classN>_mixin.lang
-    └── <classN>_interface_mixin.lang
-```
-
-**Example**
-
-```python
-📁 with_users/
-└── 📁 base/
-    ├── user_interface.lang
-    └── user.lang
-    
-📁 with_name/
-└── 📁 mixins/
-    ├── user_mixin.lang
-    └── user_interface_mixin.lang
-```
-
-### Base Classes
-
-Unlike PCP's empty marker base classes, SPD base classes include basic functionality. This eliminates the need for separate plugins—one for the empty base and another for basic features.
-
-**Example**
-
-Let's add basic functionality directly into base classes. Typically, a class's most fundamental feature becomes part of its base:
-
-```python
-# file: ./with_users/base/user_interface.lang
-
-# Base class with basic functionality ("with_name")
-class UserInterface
-{
-    void set_name(name: str);
-  
-    str get_name();
-}
-```
-
-The "User" concrete class:
-
-```python
-# file: ./with_users/base/user.lang
-
-# self interface
-"./user_interface" as ImplementsInterface;
-
-# Base class with basic functionality ("with_name")
-class User
-    implements ImplementsInterface
-{
-    void set_name(name: str) {}
-  
-    str get_name() {}
-}
-```
-
-> Note: For brevity, we are not showing, but we do the same to "*Book*" by incorporating "*WithTitle*" to its base class.
->
-
-This approach of including basic functionality in base classes creates a cleaner plugin structure:
-
-```python
-📁 plugins/
-├── 📁 with_users/  # User base has "name" functionality
-├── 📁 with_books/  # Book base has "title" functionality
-└── 📁 with_owner/
 ```
 
 ### External Classes
@@ -585,6 +373,141 @@ class UserMixin implements ImplementsInterface
 {
     BookInterface[] list_books() {}
 }
+```
+
+## SPD Applications
+
+An SPD Application is a program built by composing multiple Static Plugins. Let's see how this composition evolves:
+
+### Initial Approach: Simple Directory
+
+The simplest way to organize an application with Static Plugins would be placing all files in a single directory:
+
+```bash
+📁 mybooks_app/
+│   # user classes
+├── user.lang          # Composed class
+├── user_base.lang     # Base class
+│
+│   # book classes
+├── book.lang          # Composed class
+├── book_base.lang     # Base class
+│
+│   # partial: user has a name
+├── with_name.lang
+│
+│   # partial: book has a title
+├── with_title.lang
+│
+│   # partial: book has an owner
+└── with_owner.lang
+```
+
+### Structured Approach: The SPD Way
+
+While the simple approach works, SPD prescribes a more organized structure using three key directories:
+
+```
+📁 <application>/
+├── 📁 final/      # Composed application classes
+├── 📁 plugins/    # Static plugin modules
+└── 📁 support/    # Shared utilities (optional)
+```
+
+Below is an overview of how each folder fits into the bigger picture, followed by more details.
+
+### The `final/` Folder
+
+In SPD, composed classes are known as **Final Classes**. They reside in `final/`, one file per final class:
+
+```
+📁 mybooks_app/
+├── 📁 final/
+│   ├── user.lang
+│   └── book.lang
+└── ...
+```
+
+**Or more generally:**
+
+```
+📁 <application>/
+├── 📁 final/  # final (composed) classes
+└── ...
+```
+
+Final classes are just standard composed classes. We will see them in more details later.
+
+### The `support/` Folder
+
+If the application has shared utilities or configuration, SPD places them in a separate `support/` folder:
+
+```
+📁 mybooks_app/
+├── 📁 support/
+│   ├── 📁 lib_netclient/
+│   ├── 📁 lib_md5/
+│   └── helpers_datetime.lang
+└── ...
+```
+
+**Or more generally:**
+
+```
+📁 <application>/
+├── 📁 support/  # shared utilities and configuration
+└── ...
+```
+
+### The `plugins/` Folder
+
+SPD groups files semantically by feature. Each feature is a "**static plugin**" with its own folder. The folder name reflects the feature's goal, following the same pattern as partials - plugins are partials applied horizontally across multiple classes.
+
+Here's how we might first organize our files into individual static-plugins:
+
+```python
+# Plugin 1: Adds users to the application
+📁 with_users/
+└── user_base.lang
+
+# Plugin 2: Adds books to the application
+📁 with_books/
+└── book_base.lang
+
+# Plugin 3: Users have a name
+📁 with_name/
+└── with_name.lang
+
+# Plugin 4: Books have a title
+📁 with_title/
+└── with_title.lang
+
+# Plugin 5: Books have an owner
+📁 with_owner/
+└── with_owner.lang
+```
+
+All static plugins go into the `plugins/` directory:
+
+```
+📁 mybooks_app/
+├── 📁 final/
+│   ├── user.lang
+│   └── book.lang
+└── 📁 plugins/
+    ├── 📁 with_users/
+    ├── 📁 with_books/
+    ├── 📁 with_name/
+    ├── 📁 with_title/
+    └── 📁 with_owner/
+```
+
+Or more generally:
+
+```
+📁 <application>/
+├── 📁 final/   # final classes
+└── 📁 plugins/ # static plugins
 ```
 
 ### Final Classes Implementation
