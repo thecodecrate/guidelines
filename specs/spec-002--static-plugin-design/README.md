@@ -22,7 +22,7 @@ Within **Static Plugin Design (SPD)**, two core elements exist:
 
 ## Understanding the Partial Class Pattern (PCP)
 
-Static Plugin Design builds on the [Partial Class Pattern](https://www.notion.so/17a011720877805c9872f3ab401ad1ab?pvs=21), which splits class definitions across multiple files.
+Static Plugin Design builds on the [Partial Class Pattern](../spec-001--partial-class-pattern/README.md), which splits class definitions across multiple files.
 
 ### Example: Decomposing a Monolithic Class
 
@@ -105,7 +105,7 @@ class User
 - **Interfaces:** Each class needs an interface (omitted for brevity)
 - **Dependencies:** Shape inheritance order - higher-level partials override lower ones, with base class at bottom
 
-For complete details, see [[spec-001] Partial Class Pattern](https://www.notion.so/17a011720877805c9872f3ab401ad1ab?pvs=21).
+For complete details, see [[spec-001] Partial Class Pattern](../spec-001--partial-class-pattern/README.md).
 
 ## Static Plugins
 
@@ -683,72 +683,4 @@ Here's how a Devise-like authentication plugin would be structured:
     │   ├── 📁 with_validatable/
     │   └── 📁 with_lockable/
     └── ...
-```
-
-## Optional: Manifest Files
-
-Manifests are an optional but recommended feature for SPD applications and plugins. They provide a structured way to define dependencies and configurations.
-
-### Plugin Manifest
-
-Each plugin should include a `_plugin.toml` manifest file in its root directory:
-
-```text
-📁 <plugin>/
-├── _plugin.toml     # Plugin configuration
-└── ...
-```
-
-Required fields in `_plugin.toml`:
-
-- `name`: Unique identifier for the plugin within the application, preferably matching the plugin folder name (e.g., "*with_dob*").
-- `dependencies`: Array of plugin identifiers that this plugin depends on (e.g., "*with_users*"). List dependencies from lowest to highest precedence.
-
-**Examples**
-
-```toml
-# No dependencies
-name = "with_users"
-dependencies = []
-```
-
-```toml
-# Single dependency
-name = "with_dob"
-dependencies = ["with_users"]
-```
-
-```toml
-# Multiple dependencies
-name = "with_age"
-dependencies = [
-    "with_users",  # base
-    "with_dob"     # required for age calculation
-]
-```
-
-### Application Manifest
-
-Applications require a `_app.toml` manifest in their root:
-
-```text
-📁 <application>/
-├── _app.toml      # Application configuration
-└── ...
-```
-
-Required fields in `_app.toml`:
-
-- `name`: Application identifier (e.g., "myapp")
-- `plugins`: Array of enabled plugins in precedence order
-
-**Example**
-
-```toml
-name = "myapp"
-plugins = [
-    "with_users",
-    "with_dob",
-    "with_age"
-]
 ```
