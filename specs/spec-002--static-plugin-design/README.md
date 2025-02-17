@@ -22,7 +22,7 @@ Within **Static Plugin Design (SPD)**, two core elements exist:
 
 ## Understanding the Partial Class Pattern (PCP)
 
-Static Plugin Design builds on the [Partial Class Pattern](https://www.notion.so/17a011720877805c9872f3ab401ad1ab?pvs=21), which splits class definitions across multiple files.
+Static Plugin Design builds on the [Partial Class Pattern](../spec-001--partial-class-pattern/README.md), which splits class definitions across multiple files.
 
 ### Example: Decomposing a Monolithic Class
 
@@ -105,7 +105,7 @@ class User
 - **Interfaces:** Each class needs an interface (omitted for brevity)
 - **Dependencies:** Shape inheritance order - higher-level partials override lower ones, with base class at bottom
 
-For complete details, see [[spec-001] Partial Class Pattern](https://www.notion.so/17a011720877805c9872f3ab401ad1ab?pvs=21).
+For complete details, see [[spec-001] Partial Class Pattern](../spec-001--partial-class-pattern/README.md).
 
 ## Static Plugins
 
