@@ -1,4 +1,4 @@
-# [spec-002] Static Plugin Design
+# \[spec-002\] Static Plugin Design
 
 This specification describes a methodology for extending applications through "static plugins." Unlike runtime plugins, static plugins are composed at the source-code level through class composition.
 
@@ -8,9 +8,9 @@ By composing source code at development time, static plugins retain static analy
 
 Static plugins provide several key advantages compared to dynamic plugins:
 
-- **Full Static Analysis** – All code remains visible during development, enabling comprehensive static analysis including linting and type checking.
 - **No Magic Behavior** – All code dependencies are clearly visible in the source, with no hidden or magical runtime behavior.
 - **Eases Debugging** – Straightforward execution without dynamic events.
+- **Full Static Analysis** – All code remains visible during development, enabling comprehensive static analysis including linting and type checking.
 - **Zero Runtime Overhead** – No event-based overhead or dynamic loading costs.
 
 ### **Core Elements**
@@ -24,135 +24,111 @@ Within **Static Plugin Design (SPD)**, two core elements exist:
 
 Static Plugin Design builds on the [Partial Class Pattern](https://www.notion.so/17a011720877805c9872f3ab401ad1ab?pvs=21), which splits class definitions across multiple files.
 
-### Simple Example
+### Example: Decomposing a Monolithic Class
 
-Consider a monolithic `User` class handling three core responsibilities: name, date of birth (dob), and age.
+Let's examine a typical monolithic `User` class that manages name, date of birth (DOB), and age calculations:
 
 ```python
 class User {
-    # name
+    # Name management
     void set_name(name: str) {}
     str get_name() {}
 
-    # date of birth
+    # Date of birth (DOB) management
     void set_dob(dob: Date) {}
     Date get_dob() {}
 
-    # age calculation
+    # Age calculation
     int calculate_age() {}
 }
 ```
 
-> Note: Examples use simplified pseudo-code mixing Python and C# syntax for clarity.
->
+### Applying PCP
 
-### Applying the Partial Class Pattern
+PCP divides this class into three distinct components:
 
-Let's restructure the `User` class using PCP:
+1. **Base Class** (`UserBase`) — A minimal foundation class
+2. **Partial Classes** — Separate implementations for each feature
+3. **Composed Class** — The final class that combines all components
+
+Here's how we restructure the code:
 
 ```python
-# base
+# Base class - foundation
 class UserBase {}
 
-# partial 1: name
+# Name management partial
 class WithName extends UserBase {
     void set_name(name: str) {}
     str get_name() {}
 }
 
-# partial 2: date of birth
+# DOB management partial
 class WithDob extends UserBase {
     void set_dob(dob: Date) {}
     Date get_dob() {}
 }
 
-# partial 3: age calculation
+# Age calculation partial
 class WithAge extends UserBase {
     int calculate_age() {}
 }
 
-# composed
+# Final composed class
 class User
-    extends WithAge,   # highest precedence
+    extends WithAge,    # Highest precedence
             WithDob,
             WithName,
-            UserBase   # lowest precedence
-{
-}
+            UserBase    # Lowest precedence
+{}
 ```
 
-Using PCP, we organize the class into these components:
+### Dependencies
 
-1. **Base Class ("*UserBase*")** – an empty marker class for PCP.
-2. **Partial Classes ("*WithName*", "*WithDob*", "*WithAge*")** – each partial inherits from `UserBase` and implements a focused feature.
-3. **Composed Class ("*User*")** – inherits from all partials and `UserBase`.
+Partials can have dependencies. For example, age calculation needs date of birth functionality.
 
-### Details
+When A depends on B, list A before B in the inheritance chain for proper method overriding.
 
-- **Interfaces:** Each class requires its own interface to ensure type safety. For simplicity, we've omitted these interfaces from our example.
-- **Inheritance Order:** Composed classes follow a strict precedence pattern. In the extends clause, classes are listed from highest to lowest precedence. Later partials can override methods from earlier ones, while the base class maintains the lowest precedence.
+**Example**
 
-For more details, see [[spec-001] Partial Class Pattern](https://www.notion.so/17a011720877805c9872f3ab401ad1ab?pvs=21).
+```python
+class User
+    extends WithAge,    # Depends on WithDob
+            WithDob,    # Provides DOB methods
+            UserBase
+{}
+```
+
+### PCP Key Concepts
+
+- **Components:** Consists of partials, base and composed classes
+- **Interfaces:** Each class needs an interface (omitted for brevity)
+- **Dependencies:** Shape inheritance order - higher-level partials override lower ones, with base class at bottom
+
+For complete details, see [[spec-001] Partial Class Pattern](https://www.notion.so/17a011720877805c9872f3ab401ad1ab?pvs=21).
 
 ## Static Plugins
 
-A Static Plugin is a modular unit that adds a specific feature to an application. At its core, Static Plugins consist of classes organized using the Partial Class Pattern.
+A Static Plugin is a modular unit that adds a specific feature to an application. In essence, it consists of a collection of PCP classes.
 
 ### File Structure
 
-A Static Plugin uses this file structure:
+A Static Plugin follows this structure:
 
-```
+```text
 📁 <plugin name>/
 ├── 📁 base/         # New classes provided by the plugin to the application
 ├── 📁 mixins/       # Partials extending existing classes
 └── 📁 external/     # References to classes defined by other plugins
 ```
 
-When naming plugin folders, follow the same convention as PCP's partial naming: prefix "***With***" followed by a feature description. Use your language's standard case for files and folders. If no standard exists, we recommend snake case (e.g., `with_dob`).
-
-Example plugin folder names:
-
-- `with_users/` - Handles user management functionality
-- `with_dob/` - Manages date of birth features
-- `with_age/` - Provides age calculation capabilities
-
-### Plugin Dependencies
-
-Plugins can depend on other plugins to extend functionality. Here's an example dependency graph:
-
-```
-with_users (base)
-    ↑
-with_dob
-    ↑
-with_age
-```
-
-- `with_users`:
-  - No dependencies (provides base User class)
-- `with_dob` depends on:
-  - `with_users` (extends User class)
-- `with_age` depends on:
-  - `with_users` (extends User class)
-  - `with_dob` (for date of birth calculations)
-
-**→ Key rules**
-
-1. Dependencies must be acyclic - no circular dependencies allowed
-2. If circular dependencies occur, extract shared code into a new plugin
-3. Dependency precedence follows PCP rules:
-    - Base classes have lowest precedence
-    - Each dependent plugin gains higher precedence
-    - Composed class sets the complete precedence chain
-
-We'll explore the implementation details of dependency handling in later sections, when composing classes.
+Plugin folders use the "***With***" prefix followed by a feature name. Follow your language's naming standards, defaulting to snake case (e.g., `with_dob`).
 
 ### Base Classes
 
-Base classes are new classes that a plugin provides to the application. Unlike PCP's empty marker classes, SPD base classes contain core functionality.
+Base classes are new classes that a plugin provides to the application. Unlike PCP's empty marker classes, SPD base classes implement essential features.
 
-```
+```text
 📁 <plugin>/
 └── 📁 base/
     ├── <class 1>.lang
@@ -162,18 +138,18 @@ Base classes are new classes that a plugin provides to the application. Unlike P
     └── <class N>_interface.lang
 ```
 
-**→ Example**
+**Example**
 
 Consider a plugin `with_users` that provides a `User` class:
 
-```
+```text
 📁 with_users/
 └── 📁 base/
     ├── user.lang
     └── user_interface.lang
 ```
 
-A class's most fundamental feature should be part of its base. In this case, we include the "*name*" functionality in the base *User* class. Here's the *User* interface:
+The base class should contain the most fundamental features. In this case, we include the "*name*" functionality in the base *User* class. Here's the *User* interface:
 
 ```python
 # file: ./with_users/base/user_interface.lang
@@ -203,21 +179,16 @@ class User
 }
 ```
 
-**→ Import Convention**
+**Notes**
 
-Following PCP's convention, when importing a self-interface, always use the alias `ImplementsInterface`.
-
-**→ Empty Base Classes**
-
-Including basic functionality in the base class eliminates the need for separate plugins—one for the empty base and another for core features. However, you may sometimes want an empty base class that plugins fully extend, which this spec allows.
+- **Import Convention:** Following PCP's convention, when importing a self-interface, always use the alias `ImplementsInterface`.
+- **Empty Base Classes:** While base classes typically include core functionality, you can create empty base classes that plugins will fully extend if needed.
 
 ### Mixins
 
-Mixins extend the functionality of an existing base class, serving as the equivalent of PCP's partials.
+Mixins extend the functionality of an existing base class, functioning as PCP's partials.
 
-**→ File Structure**
-
-```
+```text
 📁 <plugin name>/
 └── 📁 mixins/
     ├── <class 1>_mixin.lang
@@ -227,29 +198,39 @@ Mixins extend the functionality of an existing base class, serving as the equiva
     └── <class N>_interface_mixin.lang
 ```
 
-**→ Naming Convention**
+Each mixin's name ends with `Mixin` (e.g., `UserMixin`, `UserInterfaceMixin`).
 
-For naming convention, append "***Mixin***" to the class name:
+**Mutual Exclusivity Rule**
 
-- **Mixin Class:** `<class>Mixin` (e.g., “*UserMixin*”, "*user_mixin*")
-- **Mixin Interface:** `<class>InterfaceMixin` (e.g., “*UserInterfaceMixin*”, "*user_interface_mixin*")
+A plugin can contain multiple base classes and mixins, but it cannot use mixins to extend its own base classes. Simply put: **One plugin can't both define and extend the same class.**
 
-**→ Mixins vs Base Classes**
+**Example**
 
-Mixins extend base classes, which must be defined in separate plugins. A plugin cannot define both a base class and its mixin.
+Here's a `with_dob` plugin that adds date of birth to the "*User*" class:
 
-**→ Example Implementation**
-
-Let's examine a `with_dob` plugin that adds date of birth functionality to the "*User*" class through a mixin:
-
-```
+```text
 📁 with_dob/
 └── 📁 mixins/
     ├── user_mixin.lang
     └── user_interface_mixin.lang
 ```
 
-**→→ Implementing Mixin Class**
+Rather than importing directly from other plugins, mixin interfaces use an "external" version that acts as an intermediary. This creates a clean abstraction layer between plugins, which we'll explore in the next section.
+
+```python
+# file: ./with_dob/mixins/user_interface_mixin.lang
+
+# external class, i.e. from another plugin
+"../external/user_interface" as UserInterface;
+
+# interface with new features for the class
+interface UserMixinInterface
+    extends UserInterface
+{
+    void set_dob(dob: Date);
+    Date get_dob();
+}
+```
 
 The concrete implementation of a mixin follows the same pattern as a PCP partial:
 
@@ -268,32 +249,11 @@ interface UserMixin
 }
 ```
 
-**→→ Implementing Mixin Interface**
-
-The interface follows PCP's pattern but introduces an important distinction: rather than directly importing classes from other plugins, we use an "external" version as an intermediary. These external classes serve as a layer of abstraction between plugins. We'll explore how to create these external classes in the next section.
-
-```python
-# file: ./with_dob/mixins/user_interface_mixin.lang
-
-# external class, i.e. from another plugin
-"../external/user_interface" as UserInterface;
-
-# interface with new features for the class
-interface UserMixinInterface
-    extends UserInterface
-{
-    void set_dob(dob: Date);
-    Date get_dob();
-}
-```
-
 ### External Classes
 
-When a plugin has dependencies (like plugins with mixins), it needs to import classes from those dependencies. Rather than importing these classes directly, which can become complex when multiple plugins extend them, we create local composed versions called "external classes" in the `external/` folder.
+Instead of importing classes directly from other plugins, which becomes complex with multiple extensions, plugins use "external classes" in the `external/` folder as intermediaries. These external classes serve as a bridge, used only when base classes and mixins need to reference classes from other plugins.
 
-**→ File Structure**
-
-```
+```text
 📁 <plugin name>/
 └── 📁 external/
     ├── <class 1>_interface.lang
@@ -301,24 +261,33 @@ When a plugin has dependencies (like plugins with mixins), it needs to import cl
     └── <class N>_interface.lang
 ```
 
-**→ External Classes: Interfaces vs Concrete**
+External classes match their base class names (e.g. `user_interface`, `book_interface`).
 
-Plugins typically only need to import interfaces from other plugins, not their concrete implementations. External concrete classes exist but are uncommon and reserved for special cases.
+**Focus on Interfaces**
 
-Since external concrete classes are a specialized topic we'll address later, let's focus on external interfaces for now.
+Plugins generally import only interfaces, not concrete implementations, from other plugins. While external concrete classes exist, they're uncommon and will be covered later.
 
-**→ Example Implementation**
+**Import Convention**
 
-In our `with_dob` plugin, the mixin's interface extends the base interface from "*with_users*". We use an external class interface instead of importing directly:
+When importing classes into external classes, you must follow these naming conventions:
 
-```
+- **Base Class:** `<class>Base` (e.g., "*UserBase*")
+- **Base Interface:** `<class>BaseInterface` (e.g., "*UserBaseInterface*")
+- **Mixin Class:** `<plugin name>` (e.g., "*WithAge*")
+- **Mixin Interface:** `<plugin name>Interface` (e.g., "*WithAgeInterface*")
+
+**Example**
+
+Earlier, we saw that the `with_dob` plugin's mixin interface extends the base interface from `with_users` through an external class interface. Here's how to implement it:
+
+```text
 📁 with_dob/
 ├── 📁 external/
 │   └── user_interface.lang
 └── ...
 ```
 
-External classes follow the same implementation pattern as PCP's composed classes:
+External interfaces follow the same implementation pattern as PCP's composed interfaces:
 
 ```python
 # file: ./with_dob/external/user_interface.lang
@@ -333,52 +302,7 @@ interface UserInterface
 }
 ```
 
-**→→ Importing Base Classes**
-
-When importing a base class in a composed class definition (such as an external class), use:
-
-- `<class>Base` for concrete implementations (e.g., "*UserBase*")
-- `<class>BaseInterface` for interfaces (e.g., "*UserBaseInterface*")
-
-This aligns with PCP naming conventions.
-
-```python
-# file: ./with_dob/external/user_interface.lang
-
-# base interface
-"../../with_users/base/user_interface" as UserBaseInterface;
-
-...
-```
-
-**→→ Importing Mixins**
-
-When importing mixins in an external class definition, name them to match their plugin names (e.g., "*WithAge*", "*WithAgeInterface*"). Here's an example:
-
-```python
-# file: ./with_isbn/external/book_interface.lang
-
-# base interface
-"../../with_books/base/book_interface" as BookBaseInterface;
-
-# mixins
-"../../with_author/mixins/book_interface_mixin" as WithAuthorInterface;
-"../../with_genre/mixins/book_interface_mixin" as WithGenreInterface;
-"../../with_owner/mixins/book_interface_mixin" as WithOwnerInterface;
-
-interface BookInterface
-    extends WithOwnerInterface,    # last mixin to override
-            WithGenreInterface,
-            WithAuthorInterface,
-            BookBaseInterface,     # base
-{
-    # intentionally empty
-}
-```
-
-**→ Using External Classes**
-
-External Classes serve as intermediaries for mixins and base classes. These components must always reference External Classes rather than directly accessing classes from other plugins:
+To use external classes, just import them:
 
 ```python
 # file: ./with_dob/mixins/user_interface_mixin.lang
@@ -395,14 +319,57 @@ interface UserMixinInterface
 }
 ```
 
-### Example: Plugin with Multiple Dependencies
+### Mixin as External Class
+
+When importing a class from another plugin, use the local mixin instead of its external class if one is available. This ensures access to the most recent mixin-added features.
+
+**Example**
+
+Consider a plugin that adds user role functionality to the application. This plugin introduces a new "Role" class and enhances the existing "*User*" class:
+
+```python
+# file ./with_roles/mixins/user_interface_mixin.lang
+
+# self external
+"../external/user_interface" as UserInterface;
+
+interface UserInterfaceMixin
+    extends UserInterface
+{
+    str get_role_name();
+}
+```
+
+When referencing "*User*" from another class in the same plugin, use the local mixin version instead of the external class. This ensures access to all the latest plugin-added functionality:
+
+```python
+# file: ./with_roles/base/role_interface.lang
+
+# using the local mixin instead of the external version of the class
+"../mixins/user_interface_mixin" as UserInterface;
+
+interface RoleInterface
+{
+    UserInterface[] get_users();
+}
+```
+
+**Notes**
+
+- **Import Convention:** When using a mixin interface as an external class, name it `<class>Interface` (e.g. "*UserInterface*") to match regular external class naming.
+
+### Plugin Dependencies
+
+Plugin dependencies are managed through inheritance order in composed classes, following the same approach as PCP dependencies.
+
+**Example**
 
 Let's see how to build a plugin that depends on multiple other plugins. The `with_age` plugin adds age calculation functionality to the *User* class. It has two dependencies:
 
 - `with_users`: provides the base "*User*" class we'll extend
 - `with_dob`: provides date of birth functionality for the "*User*" class, which we need to calculate age
 
-First, we compose the External interface for the *User* class that our mixins will use:
+**External Interface:** First, we compose the external interface for the *User* class that our mixins will use:
 
 ```python
 # file: ./with_age/external/user_interface.lang
@@ -422,7 +389,7 @@ interface UserInterface
 }
 ```
 
-Now we can implement the age calculation functionality in our mixin:
+**Mixin Interface:** Now we can implement the age calculation functionality in our mixin:
 
 ```python
 # file: ./with_age/mixins/user_interface_mixin.lang
@@ -437,7 +404,7 @@ interface UserInterfaceMixin
 }
 ```
 
-And the concrete implementation:
+**Mixin Implementation:** And the concrete implementation:
 
 ```python
 # file: ./with_age/mixins/user_mixin.lang
@@ -456,9 +423,9 @@ class UserMixin
 }
 ```
 
-Here's the complete file structure for the plugin:
+**File Structure:** Here's the complete file structure for the plugin:
 
-```
+```text
 📁 with_age/
 ├── 📁 external/
 │   └── user_interface.lang
@@ -476,7 +443,7 @@ An SPD Application is a collection of static plugins that combines mixins and ba
 
 A SPD application has this structure:
 
-```
+```text
 📁 <application name>/
 ├── 📁 plugins/    # Static plugins
 ├── 📁 final/      # Composed classes from plugins' mixins and bases
@@ -495,7 +462,7 @@ Name your application folder following your programming language or framework's 
 
 Store all static plugins in the `plugins/` directory:
 
-```
+```text
 📁 myapp/
 ├── 📁 plugins/
 │   ├── 📁 with_users/
@@ -506,7 +473,7 @@ Store all static plugins in the `plugins/` directory:
 
 **Or more generally:**
 
-```
+```text
 📁 <application>/
 ├── 📁 plugins/
 │   ├── 📁 <plugin 1>
@@ -519,7 +486,7 @@ Store all static plugins in the `plugins/` directory:
 
 In an SPD application, composed classes are called "**Final Classes**". Each final class and its interface version is stored in its own file within the `final/` directory:
 
-```
+```text
 📁 myapp/
 ├── 📁 final/
 │   ├── user.lang
@@ -529,7 +496,7 @@ In an SPD application, composed classes are called "**Final Classes**". Each fin
 
 **Or more generally:**
 
-```
+```text
 📁 <application>/
 ├── 📁 final/
 │   ├── <class 1>.lang            # composed class 1
@@ -540,9 +507,11 @@ In an SPD application, composed classes are called "**Final Classes**". Each fin
 └── ...
 ```
 
-**→ Implementation**
+Final classes are named to match the class they implement (e.g., "*User*") and follow the same implementation pattern used by external classes.
 
-Final classes follow standard PCP composition. Here's an example of a "*UserInterface*":
+**Example**
+
+Here's an example of a "*UserInterface*":
 
 ```python
 # file: ./final/user_interface.lang
@@ -592,7 +561,7 @@ class User
 
 Store shared utilities and configuration in the `support/` folder:
 
-```
+```text
 📁 myapp/
 ├── 📁 support/
 │   ├── 📁 lib_netclient/
@@ -603,7 +572,7 @@ Store shared utilities and configuration in the `support/` folder:
 
 **Or more generally:**
 
-```
+```text
 📁 <application>/
 ├── 📁 support/  # shared utilities and configuration
 └── ...
@@ -613,7 +582,7 @@ Store shared utilities and configuration in the `support/` folder:
 
 Using an SPD application is straightforward—simply use its final classes.
 
-**→ Example**
+**Example**
 
 ```python
 # import application's final classes
@@ -630,43 +599,6 @@ print(user.get_age());
 ```
 
 ## Special Cases
-
-### Mixin Preference Over External Class
-
-When importing a class from another plugin, prefer using the local mixin (if available) rather than its external class. This ensures you have access to all the latest mixin-added features.
-
-**→ Example - Local Mixin Reference:**
-
-Let's say we have a mixin adding functionality to the "*User*" class:
-
-```python
-# file ./with_roles/mixins/user_interface_mixin.lang
-
-# self external
-"../external/user_interface" as UserInterface;
-
-interface UserInterfaceMixin
-    extends UserInterface
-{
-    str get_role_name();
-}
-```
-
-When another class in the same plugin (whether a base class or mixin) needs to reference "*User*", we should use its mixin version instead of importing the external "*User*" class. This mixin version, being a child of the same external class, ensures access to all the latest functionality:
-
-```python
-# file: ./with_roles/base/role_interface.lang
-
-# using the local mixin instead of the external version of the class
-"../mixins/user_interface_mixin" as UserInterface;
-
-interface RoleInterface
-{
-    UserInterface[] get_users();
-}
-```
-
-When importing a mixin as an external class, use the standard external class naming format (e.g., `<class>Interface`).
 
 ### Concrete External Classes
 
@@ -697,11 +629,11 @@ class User
 
 Anything can be implemented as an SPD Application, including plugins themselves. When using this approach, the sub-application's final classes are mapped to base classes. This sub-application is called "core" since it represents the plugin's core implementation.
 
-**→ File Structure**
+**File Structure**
 
 A plugin implemented as an SPD Application uses this structure:
 
-```
+```text
 📁 <plugin name>/
 ├── 📁 base/ -> "./core/final/"    # symlink
 │
@@ -716,11 +648,11 @@ The key components are:
 - `core/`: The directory that contains the complete SPD application
 - `base/`: A symbolic link pointing to the final classes in core
 
-**→ Alternative without Symlinks**
+**Alternative without Symlinks**
 
 If your platform doesn't support symlinks, or you prefer not to use them, you can manually create wrapper classes in the "*base*" folder that act as aliases to the classes in core's final.
 
-```
+```text
 📁 <plugin name>/
 ├── 📁 base/    # contains wrappers for core's final classes
 │   └── ...
@@ -731,11 +663,11 @@ If your platform doesn't support symlinks, or you prefer not to use them, you ca
     └── 📁 support/
 ```
 
-**→ Example**
+**Example**
 
 Here's how a Devise-like authentication plugin would be structured:
 
-```
+```text
 📁 with_authentication/
 ├── 📁 base/ -> "./core/final/"   # symlink
 │
@@ -761,7 +693,7 @@ Manifests are an optional but recommended feature for SPD applications and plugi
 
 Each plugin should include a `_plugin.toml` manifest file in its root directory:
 
-```
+```text
 📁 <plugin>/
 ├── _plugin.toml     # Plugin configuration
 └── ...
@@ -799,7 +731,7 @@ dependencies = [
 
 Applications require a `_app.toml` manifest in their root:
 
-```
+```text
 📁 <application>/
 ├── _app.toml      # Application configuration
 └── ...
