@@ -1,42 +1,43 @@
 {
-    "name": "TheCodeCrate's Guidelines",
-    "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
-    "customizations": {
-      "vscode": {
-        "extensions": [
-            "DavidAnson.vscode-markdownlint",
-            "github.copilot",
-            "github.copilot-chat",
-            "github.vscode-github-actions",
-            "tamasfe.even-better-toml",
-            "bierner.markdown-preview-github-styles",
-            "bierner.markdown-mermaid",
-            "bierner.markdown-emoji",
-            "bierner.markdown-checkbox",
-            "bierner.markdown-yaml-preamble",
-            "bierner.markdown-footnotes",
-            "bierner.github-markdown-preview"
+  "name": "TheCodeCrate's Guidelines",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "DavidAnson.vscode-markdownlint",
+        "github.copilot",
+        "github.copilot-chat",
+        "github.vscode-github-actions",
+        "tamasfe.even-better-toml",
+        "bierner.markdown-preview-github-styles",
+        "bierner.markdown-mermaid",
+        "bierner.markdown-emoji",
+        "bierner.markdown-checkbox",
+        "bierner.markdown-yaml-preamble",
+        "bierner.markdown-footnotes",
+        "bierner.github-markdown-preview"
+      ],
+      "settings": {
+        "editor.linkedEditing": true,
+        "editor.formatOnSave": true,
+        "editor.rulers": [
+          80,
+          100
         ],
-        "settings": {
-          "editor.linkedEditing": true,
-          "editor.formatOnSave": true,
-          "editor.rulers": [
-            80,
-            100
-          ],
-          "editor.guides.bracketPairs": true,
-          "editor.guides.highlightActiveIndentation": true,
-          "explorer.sortOrderLexicographicOptions": "upper",
-          "terminal.integrated.shell.linux": "/bin/zsh",
-          "[toml]": {
-            "editor.defaultFormatter": "tamasfe.even-better-toml",
-            "editor.formatOnSave": true
-          },
-          "[markdown]": {
-            "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
-          }
+        "editor.guides.bracketPairs": true,
+        "editor.guides.highlightActiveIndentation": true,
+        "explorer.sortOrderLexicographicOptions": "upper",
+        "terminal.integrated.shell.linux": "/bin/zsh",
+        "[toml]": {
+          "editor.defaultFormatter": "tamasfe.even-better-toml",
+          "editor.formatOnSave": true
+        },
+        "[markdown]": {
+          "editor.defaultFormatter": "DavidAnson.vscode-markdownlint",
+          "editor.wordWrap": "on"
         }
       }
-    },
-    "remoteUser": "vscode"
-  }
+    }
+  },
+  "remoteUser": "vscode"
+}
