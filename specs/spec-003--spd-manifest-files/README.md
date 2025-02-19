@@ -1,12 +1,12 @@
 # \[spec-003\] SPD Manifest Files
 
-This specification defines manifest files for [Static-Plugin Design (SPD)](../spec-002--static-plugin-design/README.md). These files provide metadata for SPD applications and their plugins, containing essential information and settings.
+This specification defines manifest files for [Static-Plugin Design (SPD)](https://github.com/thecodecrate/guidelines/blob/main/specs/spec-002--static-plugin-design/README.md). These files provide metadata for SPD applications and their plugins, containing essential information and settings.
 
 ## Plugin Manifest
 
 Each plugin should include a `_plugin.toml` manifest file in its root directory:
 
-```text
+```
 📁 <plugin>/
 ├── _plugin.toml     # Plugin configuration
 └── ...
@@ -44,7 +44,7 @@ dependencies = [
 
 Applications require a `_app.toml` manifest in their root:
 
-```text
+```
 📁 <application>/
 ├── _app.toml      # Application configuration
 └── ...
@@ -65,3 +65,8 @@ plugins = [
     "with_age"
 ]
 ```
+
+## References
+
+- [spec-002](https://github.com/thecodecrate/guidelines/blob/main/specs/spec-002--static-plugin-design/README.md) - Static-Plugin Design (SPD)
+- [spec-004](https://github.com/thecodecrate/guidelines/blob/main/specs/spec-004--spd-naming-convention/README.md) - SPD Naming Convention

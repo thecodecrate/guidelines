@@ -764,3 +764,9 @@ Here's how a Devise-like authentication plugin would be structured:
     │   └── 📁 with_lockable/
     └── ...
 ```
+
+## References
+
+- [spec-001](https://github.com/thecodecrate/guidelines/blob/main/specs/spec-001--partial-class-pattern/README.md) - Partial Class Pattern (PCP)
+- [spec-003](https://github.com/thecodecrate/guidelines/blob/main/specs/spec-003--spd-manifest-files/README.md) - SPD Manifest Files
+- [spec-004](https://github.com/thecodecrate/guidelines/blob/main/specs/spec-004--spd-naming-convention/README.md) - SPD Naming Convention
