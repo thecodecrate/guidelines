@@ -1,4 +1,4 @@
-# \[spec-004\] SPD Naming Convention
+# \[spec4\] SPD Naming Convention
 
 This specification outlines a standard naming convention for Static Plugin Design (SPD) plugin folders to ensure consistent organization.
 
@@ -88,5 +88,5 @@ While this specification establishes a naming pattern, it does not specify a cas
 
 ## References
 
-- [spec-002](https://github.com/thecodecrate/guidelines/blob/main/specs/spec-002--static-plugin-design/README.md) - Static-Plugin Design (SPD)
-- [spec-003](https://github.com/thecodecrate/guidelines/blob/main/specs/spec-003--spd-manifest-files/README.md) - SPD Manifest Files
+- [spec2](https://github.com/thecodecrate/guidelines/blob/main/specs/spec-002--static-plugin-design/README.md) - Static-Plugin Design (SPD)
+- [spec3](https://github.com/thecodecrate/guidelines/blob/main/specs/spec-003--spd-manifest-files/README.md) - SPD Manifest Files
