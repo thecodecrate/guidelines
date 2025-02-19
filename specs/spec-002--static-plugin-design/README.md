@@ -115,7 +115,7 @@ A Static Plugin is a modular unit that adds a specific feature to an application
 
 - **Base Classes:** New classes provided by the plugin to the application
 - **Mixins:** Partials extending existing classes
-- **External Classes:** References to classes defined by other plugins
+- **Bridge Classes:** References to classes defined by other plugins
 
 ### File Structure
 
@@ -125,7 +125,7 @@ A Static Plugin follows this structure:
 📁 <plugin name>/
 ├── 📁 base/
 ├── 📁 mixins/
-└── 📁 external/
+└── 📁 bridges/
 ```
 
 **Naming Convention:** Plugin folders use the "***With***" prefix followed by a feature name. Follow your language's naming standards, defaulting to snake case (e.g., `with_dob`).
@@ -222,13 +222,13 @@ Consider a `with_dob` plugin that adds date of birth to the *User* class:
     └── user_interface_mixin.lang
 ```
 
-**Mixin Interface:** Rather than importing directly from other plugins, mixin interfaces use an "external" version that acts as an intermediary. This creates a clean abstraction layer between plugins, which we'll explore in the next section.
+**Mixin Interface:** Rather than importing directly from other plugins, mixin interfaces use a "bridge" version that acts as an intermediary. This creates a clean abstraction layer between plugins, which we'll explore in the next section.
 
 ```python
 # file: ./with_dob/mixins/user_interface_mixin.lang
 
-# external class, i.e. from another plugin
-"../external/user_interface" as UserInterface;
+# bridge class, i.e. from another plugin
+"../bridges/user_interface" as UserInterface;
 
 # mixin interface
 interface UserMixinInterface
@@ -259,16 +259,16 @@ interface UserMixin
 **Notes**
 
 - **Naming Convention:** Each mixin's name ends with `Mixin` (e.g., `UserMixin`, `UserInterfaceMixin`).
-- **No direct plugin access:** Mixins must never directly access classes from other plugins. Instead, they must use "external classes" as intermediaries (detailed in the next section).
+- **No direct plugin access:** Mixins must never directly access classes from other plugins. Instead, they must use "bridge classes" as intermediaries (detailed in the next section).
 - **Mutual Exclusivity Rule:** A plugin can contain multiple base classes and mixins, but it cannot use mixins to extend its own base classes. Simply put: **One plugin can't both define and extend the same class.**
 
-### External Classes
+### Bridge Classes
 
-Instead of importing classes directly from other plugins, which becomes complex with multiple extensions, plugins use "**external classes**" in the `external/` folder as intermediaries. These external classes serve as a bridge, used only when base classes and mixins need to reference classes from other plugins.
+Instead of importing classes directly from other plugins, which becomes complex with multiple extensions, plugins use "**bridge classes**" in the `bridges/` folder as intermediaries. These bridge classes serve as a bridge, used only when base classes and mixins need to reference classes from other plugins.
 
 ```
 📁 <plugin name>/
-└── 📁 external/
+└── 📁 bridges/
     ├── <class 1>_interface.lang
     ├── ...
     └── <class N>_interface.lang
@@ -276,19 +276,19 @@ Instead of importing classes directly from other plugins, which becomes complex 
 
 **Implementation**
 
-Earlier, we saw that the `with_dob` plugin's mixin interface extends the base interface from `with_users` through an external interface. Here's how to implement it:
+Earlier, we saw that the `with_dob` plugin's mixin interface extends the base interface from `with_users` through a bridge interface. Here's how to implement it:
 
 ```
 📁 with_dob/
-├── 📁 external/
+├── 📁 bridges/
 │   └── user_interface.lang
 └── ...
 ```
 
-**External Interface:** External interfaces follow the same implementation pattern as PCP's composed interfaces:
+**Bridge Interface:** Bridge interfaces follow the same implementation pattern as PCP's composed interfaces:
 
 ```python
-# file: ./with_dob/external/user_interface.lang
+# file: ./with_dob/bridges/user_interface.lang
 
 # base interface
 "../../with_users/base/user_interface" as UserBaseInterface;
@@ -300,13 +300,13 @@ interface UserInterface
 }
 ```
 
-**Usage:** To use external classes, just import them.
+**Usage:** To use bridge classes, just import them.
 
 ```python
 # file: ./with_dob/mixins/user_interface_mixin.lang
 
-# self-external
-"../external/user_interface" as UserInterface;
+# self-bridge
+"../bridges/user_interface" as UserInterface;
 
 # mixin for the User class
 interface UserMixinInterface
@@ -319,21 +319,21 @@ interface UserMixinInterface
 
 **Notes**
 
-- **Naming Convention:** External classes match their base class names (e.g. `user_interface`, `book_interface`).
-- **Focus on Interfaces:** Plugins typically import only interfaces from other plugins, not concrete implementations. External concrete classes exist but are rare and will be discussed later.
-- **Import Convention:** When importing classes into external classes, use these naming patterns:
+- **Naming Convention:** Bridge classes match their base class names (e.g. `user_interface`, `book_interface`).
+- **Focus on Interfaces:** Plugins typically import only interfaces from other plugins, not concrete implementations. Bridge concrete classes exist but are rare and will be discussed later.
+- **Import Convention:** When importing classes into bridge classes, use these naming patterns:
   - **Base Class:** `<class>Base` (e.g., "*UserBase*")
   - **Base Interface:** `<class>BaseInterface` (e.g., "*UserBaseInterface*")
   - **Mixin Class:** `<plugin name>` (e.g., "*WithAge*")
   - **Mixin Interface:** `<plugin name>Interface` (e.g., "*WithAgeInterface*")
 
-### Mixin-External Classes
+### Mixin-Bridge Classes
 
-While external classes provide connections to other plugins, they don't include features from the current plugin. Since mixins extend external classes while adding new features, they can serve as more capable replacements for their parent external classes.
+While bridge classes provide connections to other plugins, they don't include features from the current plugin. Since mixins extend bridge classes while adding new features, they can serve as more capable replacements for their parent bridge classes.
 
-For this reason, when accessing features within the same plugin, use local mixins instead of external classes. This approach ensures you have access to all the latest features added by mixins.
+For this reason, when accessing features within the same plugin, use local mixins instead of bridge classes. This approach ensures you have access to all the latest features added by mixins.
 
-These mixins, when used this way, are called "**mixin-external classes**".
+These mixins, when used this way, are called "**mixin-bridge classes**".
 
 **Implementation**
 
@@ -358,18 +358,18 @@ interface UserInterfaceMixin
 ```python
 interface RoleInterface
 {
-    # external reference "UserInterface"
+    # bridge reference "UserInterface"
     UserInterface[] get_users();
 }
 ```
 
-**Using Mixin-External:** We use the mixin version of the *User* interface instead of the external interface directly. This approach is more efficient because the local mixin inherits from the external class while providing additional role functionality:
+**Using Mixin-Bridge:** We use the mixin version of the *User* interface instead of the bridge interface directly. This approach is more efficient because the local mixin inherits from the bridge class while providing additional role functionality:
 
 ```python
-# INCORRECT: using external interface
-"../external/user_interface" as UserInterface;
+# INCORRECT: using bridge interface
+"../bridges/user_interface" as UserInterface;
 
-# CORRECT: using mixin-external interface
+# CORRECT: using mixin-bridge interface
 "../mixins/user_interface_mixin" as UserInterface;
 
 interface RoleInterface
@@ -380,12 +380,12 @@ interface RoleInterface
 
 **Notes**
 
-- **Compatibility:** Mixins can safely replace their parent external class in imports since they inherit from the external class, ensuring full compatibility.
-- **No empty mixins:** Use the mixin version only when it adds functionality. Don't create empty mixins solely to wrap external classes.
+- **Compatibility:** Mixins can safely replace their parent bridge class in imports since they inherit from the bridge class, ensuring full compatibility.
+- **No empty mixins:** Use the mixin version only when it adds functionality. Don't create empty mixins solely to wrap bridge classes.
 
 ### Plugin Dependencies
 
-Plugin dependencies are managed through inheritance order in external classes, following the same approach as PCP dependencies.
+Plugin dependencies are managed through inheritance order in bridge classes, following the same approach as PCP dependencies.
 
 **Implementation**
 
@@ -394,10 +394,10 @@ Let's see a plugin that depends on multiple other plugins. The `with_age` plugin
 - `with_users`: provides the base "*User*" class we'll extend
 - `with_dob`: provides date of birth functionality for the "*User*" class, which we need to calculate age
 
-**External Interface:** This is where we define dependencies in the code. A plugin with no external interfaces has no dependencies:
+**Bridge Interface:** This is where we define dependencies in the code. A plugin with no bridge interfaces has no dependencies:
 
 ```python
-# file: ./with_age/external/user_interface.lang
+# file: ./with_age/bridges/user_interface.lang
 
 # base interface
 "../../with_users/base/user_interface" as UserBaseInterface;
@@ -419,8 +419,8 @@ interface UserInterface
 ```python
 # file: ./with_age/mixins/user_interface_mixin.lang
 
-# self external
-"../external/user_interface" as UserInterface;
+# self bridge
+"../bridges/user_interface" as UserInterface;
 
 interface UserInterfaceMixin
     extends UserInterface
@@ -450,8 +450,8 @@ class UserMixin
 
 **Notes**
 
-- **Externals vs Dependencies:** If a plugin has no external classes, it means it doesn't access any classes from other plugins and therefore has no dependencies. Conversely, if a plugin has external classes, it means it accesses other plugins and thus depends on them.
-- **Where is Defined:** The dependency relationship is defined in the external class through its inheritance list (the `extends` clause), following the PCP pattern.
+- **Bridges vs Dependencies:** If a plugin has no bridge classes, it means it doesn't access any classes from other plugins and therefore has no dependencies. Conversely, if a plugin has bridge classes, it means it accesses other plugins and thus depends on them.
+- **Where is Defined:** The dependency relationship is defined in the bridge class through its inheritance list (the `extends` clause), following the PCP pattern.
 - **PCP Rules:** Plugin dependencies follow the same rules as PCP dependencies—higher-level partials override lower ones, with the base class at the bottom.
 
 ### Importing Constraints
@@ -464,8 +464,8 @@ Each plugin component follows specific rules for imports, implementations, and e
     - Nothing, or
     - 3rd-party interfaces only
   - **Can Use:**
-    - Local mixin-external interfaces
-    - Local external interfaces
+    - Local mixin-bridge interfaces
+    - Local bridge interfaces
     - Local base interfaces
     - 3rd-party interfaces
 - **Base Concrete**
@@ -475,38 +475,38 @@ Each plugin component follows specific rules for imports, implementations, and e
     - Nothing, or
     - 3rd-party concrete classes only
   - **Can Use:**
-    - Local mixin-external classes and interfaces
-    - Local external classes and interfaces
+    - Local mixin-bridge classes and interfaces
+    - Local bridge classes and interfaces
     - Local base classes and interfaces
     - 3rd-party classes and interfaces
-- **External Interface**
+- **Bridge Interface**
   - **Can Implement:** Nothing (it's an interface)
   - **Must Extend:**
     - Outside base interface (required)
     - Outside mixin interfaces (optional)
   - **Can Use:**
-    - Local external interfaces
+    - Local bridge interfaces
     - Local base interfaces
     - 3rd-party interfaces
-- **External Concrete**
+- **Bridge Concrete**
   - **Must Implement:**
     - Self-interface only
   - **Must Extend:**
     - Outside base concrete (required)
     - Outside mixin concretes (optional)
   - **Can Use:**
-    - Local external classes and interfaces
+    - Local bridge classes and interfaces
     - Local base classes and interfaces
     - 3rd-party classes and interfaces
 - **Mixin Interface**
   - **Can Implement:** Nothing (it's an interface)
   - **Must Extend:**
-    - Self-external interface
+    - Self-bridge interface
   - **Can Also Extend:**
     - 3rd-party interfaces
   - **Can Use:**
-    - Local mixin-external interfaces
-    - Local external interfaces
+    - Local mixin-bridge interfaces
+    - Local bridge interfaces
     - Local base interfaces
     - 3rd-party interfaces
 - **Mixin Concrete**
@@ -516,8 +516,8 @@ Each plugin component follows specific rules for imports, implementations, and e
     - Nothing, or
     - 3rd-party concrete classes
   - **Can Use:**
-    - Local mixin-external classes and interfaces
-    - Local external classes and interfaces
+    - Local mixin-bridge classes and interfaces
+    - Local bridge classes and interfaces
     - Local base classes and interfaces
     - 3rd-party classes and interfaces
 
@@ -593,7 +593,7 @@ In an SPD application, composed classes are called "**Final Classes**". Each fin
 └── ...
 ```
 
-Final classes are named to match the class they implement (e.g., "*User*") and follow the same implementation pattern used by external classes.
+Final classes are named to match the class they implement (e.g., "*User*") and follow the same implementation pattern used by bridge classes.
 
 **Implementation**
 
@@ -686,12 +686,12 @@ print(user.get_age());
 
 ## Special Cases
 
-### Concrete External Classes
+### Concrete Bridge Classes
 
-External classes are typically interfaces. While concrete implementations of external classes are rarely needed, they are permitted when necessary. When implementing a concrete external class, simply follow the standard PCP composed class pattern:
+Bridge classes are typically interfaces. While concrete implementations of bridge classes are rarely needed, they are permitted when necessary. When implementing a concrete bridge class, simply follow the standard PCP composed class pattern:
 
 ```python
-# file: ./with_age/external/user.lang
+# file: ./with_age/bridges/user.lang
 
 # self-interface
 "./user_interface" as ImplementsInterface;
