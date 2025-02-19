@@ -22,7 +22,7 @@ Within **Static Plugin Design (SPD)**, two core elements exist:
 
 ## Understanding the Partial Class Pattern (PCP)
 
-***Static Plugin Design*** builds on the [*Partial Class Pattern*](https://github.com/thecodecrate/guidelines/blob/main/specs/spec-001--partial-class-pattern/README.md), which splits class definitions across multiple files.
+**Static Plugin Design** builds on the [*Partial Class Pattern*](https://github.com/thecodecrate/guidelines/blob/main/specs/spec-001--partial-class-pattern/README.md), which splits class definitions across multiple files.
 
 ### Example: Decomposing a Monolithic Class
 
