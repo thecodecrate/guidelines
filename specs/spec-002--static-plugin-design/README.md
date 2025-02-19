@@ -123,7 +123,7 @@ A Static Plugin follows this structure:
 
 ```
 📁 <plugin name>/
-├── 📁 base/
+├── 📁 bases/
 ├── 📁 mixins/
 └── 📁 bridges/
 ```
@@ -141,7 +141,7 @@ Base classes are new classes that a plugin provides to the application. Unlike P
 
 ```
 📁 <plugin>/
-└── 📁 base/
+└── 📁 bases/
     ├── <class 1>.lang
     ├── <class 1>_interface.lang
     ├── ...
@@ -155,7 +155,7 @@ Consider a plugin `with_users` that provides a `User` class:
 
 ```
 📁 with_users/
-└── 📁 base/
+└── 📁 bases/
     ├── user.lang
     └── user_interface.lang
 ```
@@ -163,7 +163,7 @@ Consider a plugin `with_users` that provides a `User` class:
 **Base Interface:** The base class should contain the most fundamental features. In this case, we include the "*name*" functionality in the base *User* class. Here's the *User* interface:
 
 ```python
-# file: ./with_users/base/user_interface.lang
+# file: ./with_users/bases/user_interface.lang
 
 # base interface
 interface UserInterface
@@ -176,7 +176,7 @@ interface UserInterface
 **Base Concrete:** Here's the concrete *User* class:
 
 ```python
-# file: ./with_users/base/user.lang
+# file: ./with_users/bases/user.lang
 
 # self-interface
 "./user_interface" as ImplementsInterface;
@@ -291,7 +291,7 @@ Earlier, we saw that the `with_dob` plugin's mixin interface extends the base in
 # file: ./with_dob/bridges/user_interface.lang
 
 # base interface
-"../../with_users/base/user_interface" as UserBaseInterface;
+"../../with_users/bases/user_interface" as UserBaseInterface;
 
 interface UserInterface
     extends UserBaseInterface
@@ -400,7 +400,7 @@ Let's see a plugin that depends on multiple other plugins. The `with_age` plugin
 # file: ./with_age/bridges/user_interface.lang
 
 # base interface
-"../../with_users/base/user_interface" as UserBaseInterface;
+"../../with_users/bases/user_interface" as UserBaseInterface;
 
 # mixin interfaces
 "../../with_dob/mixins/user_interface_mixin" as WithDobInterface;
@@ -603,7 +603,7 @@ Final classes are named to match the class they implement (e.g., "*User*") and f
 # file: ./final/user_interface.lang
 
 # base
-"../plugins/with_users/base/user_interface" as UserBaseInterface;
+"../plugins/with_users/bases/user_interface" as UserBaseInterface;
 
 # mixins
 "../plugins/with_dob/mixins/user_interface_mixin" as WithDobInterface;
@@ -627,7 +627,7 @@ interface UserInterface
 "./user_interface" as ImplementsInterface;
 
 # base
-"../plugins/with_users/base/user" as UserBase;
+"../plugins/with_users/bases/user" as UserBase;
 
 # mixins
 "../plugins/with_dob/mixins/user_mixin" as WithDob;
@@ -697,7 +697,7 @@ Bridge classes are typically interfaces. While concrete implementations of bridg
 "./user_interface" as ImplementsInterface;
 
 # base
-"../../with_users/base/user" as UserBase;
+"../../with_users/bases/user" as UserBase;
 
 # mixins
 "../../with_dob/mixins/user" as WithDob;
@@ -721,7 +721,7 @@ A plugin implemented as an SPD Application uses this structure:
 
 ```
 📁 <plugin name>/
-├── 📁 base/ -> "./core/final/"    # symlink
+├── 📁 bases/ -> "./core/final/"    # symlink
 │
 └── 📁 core/                       # SPD application
     ├── 📁 plugins/
@@ -732,7 +732,7 @@ A plugin implemented as an SPD Application uses this structure:
 The key components are:
 
 - `core/`: The directory that contains the complete SPD application
-- `base/`: A symbolic link pointing to the final classes in core
+- `bases/`: A symbolic link pointing to the final classes in core
 
 **Alternative without Symlinks**
 
@@ -740,7 +740,7 @@ If your platform doesn't support symlinks, or you prefer not to use them, you ca
 
 ```
 📁 <plugin name>/
-├── 📁 base/    # contains wrappers for core's final classes
+├── 📁 bases/    # contains wrappers for core's final classes
 │   └── ...
 │
 └── 📁 core/    # main SPD application
