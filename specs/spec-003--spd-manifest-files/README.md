@@ -1,4 +1,4 @@
-# \[spec-003\] SPD Manifests
+# \[spec-003\] SPD Manifest Files
 
 This specification defines manifest files for [Static-Plugin Design (SPD)](../spec-002--static-plugin-design/README.md). These files provide metadata for SPD applications and their plugins, containing essential information and settings.
 
