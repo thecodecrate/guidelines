@@ -1,4 +1,4 @@
-# \[spec-002\] Static Plugin Design
+# \[spec-002\] Static-Plugin Design
 
 This specification outlines a methodology for extending applications using “static plugins”.
 
