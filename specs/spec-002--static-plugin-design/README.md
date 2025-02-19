@@ -1,4 +1,4 @@
-# \[spec-002\] Static-Plugin Design
+# \[spec2\] Static-Plugin Design
 
 This specification outlines a methodology for extending applications using “static plugins”.
 
@@ -22,7 +22,7 @@ Within **Static Plugin Design (SPD)**, two core elements exist:
 
 ## Understanding the Partial Class Pattern (PCP)
 
-Static Plugin Design builds on the [Partial Class Pattern](https://github.com/thecodecrate/guidelines/blob/main/specs/spec-001--partial-class-pattern/README.md), which splits class definitions across multiple files.
+***Static Plugin Design*** builds on the [*Partial Class Pattern*](https://github.com/thecodecrate/guidelines/blob/main/specs/spec-001--partial-class-pattern/README.md), which splits class definitions across multiple files.
 
 ### Example: Decomposing a Monolithic Class
 
@@ -105,7 +105,7 @@ class User
 - **Interfaces:** Each class needs an interface (omitted for brevity)
 - **Dependencies:** Set inheritance order - higher-level partials override lower ones, with base class at bottom
 
-For complete details, see [[spec-001] Partial Class Pattern](https://github.com/thecodecrate/guidelines/blob/main/specs/spec-001--partial-class-pattern/README.md).
+For complete details, see [[spec1] Partial Class Pattern](https://github.com/thecodecrate/guidelines/blob/main/specs/spec-001--partial-class-pattern/README.md).
 
 ## Static Plugins
 
@@ -482,16 +482,22 @@ Each plugin component follows specific rules for imports, implementations, and e
 - **External Interface**
   - **Can Implement:** Nothing (it's an interface)
   - **Must Extend:**
-    - Base interface from external dependency (required)
-    - Mixin interfaces from external dependencies (optional)
-  - **Can Use:** Nothing (should contain no code)
+    - Outside base interface (required)
+    - Outside mixin interfaces (optional)
+  - **Can Use:**
+    - Local external interfaces
+    - Local base interfaces
+    - 3rd-party interfaces
 - **External Concrete**
   - **Must Implement:**
     - Self-interface only
   - **Must Extend:**
-    - Base concrete from external dependency (required)
-    - Mixin concretes from external dependencies (optional)
-  - **Can Use:** Nothing (should contain no code)
+    - Outside base concrete (required)
+    - Outside mixin concretes (optional)
+  - **Can Use:**
+    - Local external classes and interfaces
+    - Local base classes and interfaces
+    - 3rd-party classes and interfaces
 - **Mixin Interface**
   - **Can Implement:** Nothing (it's an interface)
   - **Must Extend:**
@@ -767,6 +773,6 @@ Here's how a Devise-like authentication plugin would be structured:
 
 ## References
 
-- [spec-001](https://github.com/thecodecrate/guidelines/blob/main/specs/spec-001--partial-class-pattern/README.md) - Partial Class Pattern (PCP)
-- [spec-003](https://github.com/thecodecrate/guidelines/blob/main/specs/spec-003--spd-manifest-files/README.md) - SPD Manifest Files
-- [spec-004](https://github.com/thecodecrate/guidelines/blob/main/specs/spec-004--spd-naming-convention/README.md) - SPD Naming Convention
+- [spec1](https://github.com/thecodecrate/guidelines/blob/main/specs/spec-001--partial-class-pattern/README.md) - Partial Class Pattern (PCP)
+- [spec3](https://github.com/thecodecrate/guidelines/blob/main/specs/spec-003--spd-manifest-files/README.md) - SPD Manifest Files
+- [spec4](https://github.com/thecodecrate/guidelines/blob/main/specs/spec-004--spd-naming-convention/README.md) - SPD Naming Convention

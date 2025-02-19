@@ -1,4 +1,4 @@
-# \[spec-001\] Partial Class Pattern
+# \[spec1\] Partial Class Pattern
 
 This document describes the "Partial Class Pattern"—a convention for organizing classes by dividing them into multiple parts. The pattern simplifies class definitions through modular organization, making code more maintainable and readable.
 
@@ -398,7 +398,7 @@ class DateTimeBase
 
 Now, use these as a normal base to implement partials and the composed class.
 
-```
+```python
 📁 datetime/
 ├── datetime_base.lang   # Base class
 ├── datetime_base_interface.lang
